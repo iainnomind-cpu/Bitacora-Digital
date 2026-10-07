@@ -155,11 +155,18 @@ export function useCreateEntry() {
   });
 }
 
-/** Guarda un borrador (lo usa el autoguardado). Cada guardado con cambios crea una revisión. */
-export async function saveEntryDraft(id: string, draft: EntryDraft) {
+/**
+ * Guarda un borrador (lo usa el autoguardado). Cada guardado con cambios crea una revisión;
+ * `changeSource` queda en esa revisión (p. ej. "ia_aceptada" al aplicar una sugerencia).
+ */
+export async function saveEntryDraft(
+  id: string,
+  draft: EntryDraft,
+  changeSource: "usuario" | "ia_aceptada" = "usuario",
+) {
   const { data, error } = await createClient()
     .from("entries")
-    .update({ ...draft, data: draft.data as Json })
+    .update({ ...draft, data: draft.data as Json, change_source: changeSource })
     .eq("id", id)
     .select("*")
     .single();

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { compressImage } from "@/lib/media/image";
+import { useTranscribe } from "@/lib/queries/ai";
 import { useCreateAttachment, type NewCapture } from "@/lib/queries/attachments";
 import { cn } from "@/lib/utils";
 import { Recorder } from "./recorder";
@@ -24,6 +25,7 @@ const BUTTONS = [
  */
 export function CaptureBar({ entryId }: { entryId: string | null }) {
   const create = useCreateAttachment(entryId);
+  const transcribe = useTranscribe();
   const [panel, setPanel] = useState<Panel>(null);
   const [note, setNote] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -35,7 +37,9 @@ export function CaptureBar({ entryId }: { entryId: string | null }) {
     setBusy(`Guardando ${label}…`);
     setMessage(null);
     try {
-      await create.mutateAsync(capture);
+      const attachment = await create.mutateAsync(capture);
+      // Cada audio se transcribe al subirse (§7.6); el texto aparece debajo del audio.
+      if (attachment.kind === "audio") transcribe.mutate(attachment.id);
       setMessage(`${label[0].toUpperCase()}${label.slice(1)} guardada ${destination}.`);
     } catch {
       // create.error muestra el detalle

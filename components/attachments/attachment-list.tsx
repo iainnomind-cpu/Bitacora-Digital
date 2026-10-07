@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Camera, Check, Mic, NotebookPen } from "lucide-react";
+import { Camera, Check, Loader2, Mic, NotebookPen, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatTime } from "@/lib/datetime";
+import { useTranscribe, useTranscriptions, type Transcription } from "@/lib/queries/ai";
 import { useTimeZone } from "@/lib/queries/profile";
 import { useSignedUrls, useUpdateCaption, type Attachment } from "@/lib/queries/attachments";
 import { formatDuration } from "@/lib/templates/duration";
@@ -29,6 +31,9 @@ export function AttachmentList({
   const timeZone = useTimeZone();
   const paths = attachments.flatMap((a) => (a.storage_path ? [a.storage_path] : []));
   const urls = useSignedUrls(paths);
+  const transcriptions = useTranscriptions(
+    attachments.filter((a) => a.kind === "audio").map((a) => a.id),
+  );
 
   return (
     <ol className="flex flex-col gap-3">
@@ -93,6 +98,13 @@ export function AttachmentList({
               ) : (
                 <div className="h-12 animate-pulse rounded-lg bg-muted" />
               ))}
+            {a.kind === "audio" && (
+              <TranscriptionView
+                attachmentId={a.id}
+                transcription={transcriptions.data?.get(a.id)}
+                loading={transcriptions.isPending}
+              />
+            )}
 
             {a.kind === "texto" && <p className="whitespace-pre-line">{a.text_content}</p>}
 
@@ -127,5 +139,54 @@ function CaptionInput({ attachment }: { attachment: Attachment }) {
       aria-invalid={update.isError || undefined}
       className="h-12 text-base"
     />
+  );
+}
+
+/** Texto transcrito de un audio, con su estado y botón para (re)intentar (§7.1). */
+function TranscriptionView({
+  attachmentId,
+  transcription,
+  loading,
+}: {
+  attachmentId: string;
+  transcription: Transcription | undefined;
+  loading: boolean;
+}) {
+  const transcribe = useTranscribe();
+  const working = transcribe.isPending || transcription?.status === "procesando";
+
+  if (loading) return null;
+  if (working) {
+    return (
+      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Loader2 className="size-4 animate-spin" aria-hidden />
+        Transcribiendo…
+      </p>
+    );
+  }
+  if (transcription?.status === "lista") {
+    return (
+      <blockquote className="border-l-2 pl-3 text-sm whitespace-pre-line">
+        {transcription.text || "(sin texto)"}
+      </blockquote>
+    );
+  }
+  const failed = transcription?.status === "error" || transcribe.isError;
+  return (
+    <div className="flex flex-col gap-1">
+      {failed && (
+        <p role="alert" className="text-sm text-destructive">
+          {transcribe.error?.message ?? "No se pudo transcribir."}
+        </p>
+      )}
+      <Button
+        variant="outline"
+        className="h-12 self-start"
+        onClick={() => transcribe.mutate(attachmentId)}
+      >
+        <RotateCcw className="size-4" aria-hidden />
+        {failed ? "Reintentar transcripción" : "Transcribir"}
+      </Button>
+    </div>
   );
 }

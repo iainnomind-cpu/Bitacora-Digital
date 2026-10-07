@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { use, useCallback, useState } from "react";
-import { AlertCircle, Check, CloudUpload, Loader2, Lock } from "lucide-react";
+import { AlertCircle, Check, CloudUpload, Loader2, Lock, Sparkles } from "lucide-react";
 import { EntryAttachments } from "@/components/attachments/entry-attachments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,12 @@ import {
   type Entry,
   type EntryDraft,
 } from "@/lib/queries/entries";
+import { resolveSuggestion, useFillTemplate } from "@/lib/queries/ai";
+import { useTimeZone } from "@/lib/queries/profile";
 import { useTemplateVersion, type TemplateWithFields } from "@/lib/queries/templates";
 import { validateEntryData, type EntryData } from "@/lib/templates/values";
+import type { FillOutput } from "@/lib/ai/schemas";
+import { AiFillReview } from "./ai-fill-review";
 import { DynamicForm } from "./dynamic-form";
 import { EntryHeader } from "./entry-header";
 import { EntryReadView } from "./entry-read-view";
@@ -126,6 +130,54 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
     setStatus.mutate({ status: "cerrada" });
   };
 
+  // Llenado con IA (§7.2): se propone, se revisa y solo se aplica lo que el usuario marca.
+  const timeZone = useTimeZone();
+  const fill = useFillTemplate(entry.id);
+  const [suggestion, setSuggestion] = useState<{ id: string; output: FillOutput } | null>(null);
+  const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+
+  const requestFill = async () => {
+    try {
+      await autosave.flush();
+    } catch {
+      return;
+    }
+    setApplyError(null);
+    fill.mutate(undefined, {
+      onSuccess: (r) => {
+        setSuggestion({ id: r.suggestion_id, output: r.output });
+        requestAnimationFrame(() =>
+          document.getElementById("sugerencia-ia")?.scrollIntoView({ behavior: "smooth" }),
+        );
+      },
+    });
+  };
+
+  const applySuggestion = async (patch: Partial<EntryDraft>, all: boolean) => {
+    if (!suggestion) return;
+    setApplying(true);
+    setApplyError(null);
+    try {
+      await autosave.flush();
+      const next = { ...draft, ...patch };
+      setDraft(next);
+      const saved = await saveEntryDraft(entry.id, next, "ia_aceptada");
+      queryClient.setQueryData(entryKeys.detail(entry.id), saved);
+      await resolveSuggestion(suggestion.id, all ? "aceptada" : "aceptada_parcial");
+      setSuggestion(null);
+    } catch (e) {
+      setApplyError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const discardSuggestion = () => {
+    if (suggestion) void resolveSuggestion(suggestion.id, "rechazada").catch(() => {});
+    setSuggestion(null);
+  };
+
   const voidEntry = async (reason: string) => {
     try {
       await autosave.flush();
@@ -215,6 +267,51 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
       )}
 
       <EntryAttachments entryId={entry.id} editable />
+
+      {suggestion ? (
+        <>
+          <AiFillReview
+            key={suggestion.id}
+            fields={template.fields}
+            draft={draft}
+            output={suggestion.output}
+            timeZone={timeZone}
+            pending={applying}
+            onApply={applySuggestion}
+            onDiscard={discardSuggestion}
+          />
+          {applyError && (
+            <p role="alert" className="text-sm text-destructive">
+              No se pudo aplicar: {applyError}
+            </p>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            className="h-12"
+            disabled={fill.isPending}
+            onClick={requestFill}
+          >
+            {fill.isPending ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <Sparkles className="size-4" aria-hidden />
+            )}
+            {fill.isPending ? "Leyendo audios y notas…" : "Llenar con IA"}
+          </Button>
+          {fill.error ? (
+            <p role="alert" className="text-sm text-destructive">
+              {fill.error.message}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Usa los audios transcritos y las notas de esta entrada. Revisas antes de aplicar.
+            </p>
+          )}
+        </div>
+      )}
 
       <section aria-labelledby="cierre-dia" className="flex flex-col gap-4">
         <h2 id="cierre-dia" className="border-b pb-2 font-heading text-lg font-semibold">
