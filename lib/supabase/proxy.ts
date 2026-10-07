@@ -6,6 +6,23 @@ import { supabasePublicKey, supabaseUrl } from "./env";
 const PUBLIC_PATHS = ["/login", "/auth"];
 
 export async function updateSession(request: NextRequest) {
+  // Si Supabase no acepta el redirect_to, manda el enlace a la Site URL (normalmente "/").
+  // Reenviarlo a /auth/confirm para no perder el código ni el error.
+  const { pathname: path, searchParams } = request.nextUrl;
+  if (!path.startsWith("/auth/")) {
+    if (searchParams.has("code") || searchParams.has("token_hash")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/confirm";
+      return NextResponse.redirect(url);
+    }
+    if (searchParams.has("error_code") && path !== "/login") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = "?error=link";
+      return NextResponse.redirect(url);
+    }
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabasePublicKey, {
