@@ -7,6 +7,7 @@ import { AccountCard } from "@/components/settings/account-card";
 import { InstallCard } from "@/components/settings/install-card";
 import { LabCard } from "@/components/settings/lab-card";
 import { NotificationsCard } from "@/components/settings/notifications-card";
+import { PasswordCard } from "@/components/settings/password-card";
 import { RemindersCard } from "@/components/settings/reminders-card";
 import { ThemePicker } from "@/components/settings/theme-picker";
 
@@ -89,6 +90,12 @@ export default function AjustesPage() {
           <Suspense fallback={<div className="h-28 animate-pulse rounded-xl bg-muted" />}>
             <AccountCard />
           </Suspense>
+        </section>
+        <section aria-labelledby="contrasena">
+          <h2 id="contrasena" className="mb-3 font-heading text-lg font-semibold">
+            Contraseña
+          </h2>
+          <PasswordCard />
         </section>
       </div>
     </>

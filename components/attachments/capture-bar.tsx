@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, Check, Loader2, Mic, NotebookPen } from "lucide-react";
+import { Camera, Check, ImagePlus, Loader2, Mic, NotebookPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +11,7 @@ import { useCreateAttachment, type NewCapture } from "@/lib/queries/attachments"
 import { cn } from "@/lib/utils";
 import { Recorder } from "./recorder";
 
-type Panel = "audio" | "nota" | null;
+type Panel = "audio" | "foto" | "nota" | null;
 
 const BUTTONS = [
   { key: "audio", label: "Audio", icon: Mic },
@@ -31,7 +31,9 @@ export function CaptureBar({ entryId }: { entryId: string | null }) {
   const [note, setNote] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
+  // Dos entradas de archivo: la cámara (una foto) y la galería (varias a la vez).
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const galleryInput = useRef<HTMLInputElement>(null);
   const destination = entryId ? "en la entrada" : "en la bandeja de entrada";
 
   const save = async (capture: NewCapture, label: string) => {
@@ -50,8 +52,10 @@ export function CaptureBar({ entryId }: { entryId: string | null }) {
     }
   };
 
-  const onPhotos = async (files: FileList | null) => {
+  const onPhotos = async (input: HTMLInputElement) => {
+    const files = input.files;
     if (!files?.length) return;
+    setPanel(null);
     for (const file of Array.from(files)) {
       setBusy("Preparando foto…");
       const blob = await compressImage(file);
@@ -61,12 +65,11 @@ export function CaptureBar({ entryId }: { entryId: string | null }) {
         "foto",
       );
     }
-    if (fileInput.current) fileInput.current.value = "";
+    input.value = "";
   };
 
   const onButton = (key: (typeof BUTTONS)[number]["key"]) => {
-    if (key === "foto") fileInput.current?.click();
-    else setPanel(panel === key ? null : key);
+    setPanel(panel === key ? null : key);
   };
 
   return (
@@ -78,7 +81,7 @@ export function CaptureBar({ entryId }: { entryId: string | null }) {
             type="button"
             onClick={() => onButton(key)}
             disabled={busy != null}
-            aria-expanded={key !== "foto" ? panel === key : undefined}
+            aria-expanded={panel === key}
             className={cn(
               "flex h-20 flex-col items-center justify-center gap-1.5 rounded-xl border bg-card text-sm font-medium transition-colors hover:bg-muted/50 disabled:opacity-50",
               panel === key && "border-primary ring-2 ring-primary/30",
@@ -90,13 +93,41 @@ export function CaptureBar({ entryId }: { entryId: string | null }) {
         ))}
       </div>
       <input
-        ref={fileInput}
+        ref={cameraInput}
         type="file"
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={(e) => void onPhotos(e.target.files)}
+        onChange={(e) => void onPhotos(e.currentTarget)}
       />
+      <input
+        ref={galleryInput}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => void onPhotos(e.currentTarget)}
+      />
+
+      {panel === "foto" && (
+        <div className="grid grid-cols-2 gap-3 rounded-xl border bg-card p-3">
+          <Button
+            className="h-16 flex-col gap-1 text-sm"
+            onClick={() => cameraInput.current?.click()}
+          >
+            <Camera className="size-6" aria-hidden />
+            Tomar foto
+          </Button>
+          <Button
+            variant="outline"
+            className="h-16 flex-col gap-1 text-sm"
+            onClick={() => galleryInput.current?.click()}
+          >
+            <ImagePlus className="size-6" aria-hidden />
+            Elegir de la galería
+          </Button>
+        </div>
+      )}
 
       {panel === "audio" && (
         <Recorder

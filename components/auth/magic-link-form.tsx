@@ -14,7 +14,8 @@ const codeSchema = z.string().regex(/^\d{6,10}$/, "El código son solo dígitos 
 
 type Step = "email" | "code";
 
-export function LoginForm() {
+/** Entrar con enlace o código por correo (opción secundaria; útil si no recuerdas la contraseña). */
+export function MagicLinkForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNext(searchParams.get("next"));

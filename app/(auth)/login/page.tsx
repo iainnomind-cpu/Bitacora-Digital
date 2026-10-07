@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BookOpenText } from "lucide-react";
-import { LoginForm } from "@/components/auth/login-form";
+import { AuthPanel } from "@/components/auth/auth-panel";
 
 export const metadata: Metadata = { title: "Entrar" };
 
@@ -16,7 +16,7 @@ export default function LoginPage() {
         <p className="text-sm text-muted-foreground">Bitácora de laboratorio digital</p>
       </div>
       <Suspense>
-        <LoginForm />
+        <AuthPanel />
       </Suspense>
     </main>
   );
