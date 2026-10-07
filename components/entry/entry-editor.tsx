@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { use, useCallback, useState } from "react";
 import { AlertCircle, Check, CloudUpload, Loader2, Lock, Sparkles } from "lucide-react";
 import { EntryAttachments } from "@/components/attachments/entry-attachments";
+import { EntrySamplesPanel } from "@/components/samples/entry-samples-panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/queries/entries";
 import { resolveSuggestion, useFillTemplate, usePendingFill } from "@/lib/queries/ai";
 import { useTimeZone } from "@/lib/queries/profile";
+import { syncEntrySamples } from "@/lib/queries/samples";
 import { useTemplateVersion, type TemplateWithFields } from "@/lib/queries/templates";
 import { validateEntryData, type EntryData } from "@/lib/templates/values";
 import { fillResponseSchema, type FillOutput } from "@/lib/ai/schemas";
@@ -88,8 +90,12 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
         const saved = await saveEntryDraft(entry.id, value);
         queryClient.setQueryData(entryKeys.detail(entry.id), saved);
         void queryClient.invalidateQueries({ queryKey: ["entries", "day"] });
+        // Vínculos entrada ↔ muestra según los campos de muestra (no bloquea el guardado).
+        await syncEntrySamples(entry.id, template.fields, value.data).catch((e) =>
+          console.warn("No se pudieron vincular las muestras", e),
+        );
       },
-      [entry.id, queryClient],
+      [entry.id, queryClient, template.fields],
     ),
   );
 
@@ -284,6 +290,8 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
           />
         </section>
       )}
+
+      <EntrySamplesPanel entryId={entry.id} fields={template.fields} data={draft.data} />
 
       <EntryAttachments entryId={entry.id} editable />
 
