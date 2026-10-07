@@ -2,14 +2,16 @@
 
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { formatLongDate } from "@/lib/datetime";
+import { useTimeZone } from "@/lib/queries/profile";
 
 // La fecha se calcula en el navegador: la página se prerenderiza y no debe
 // quedar congelada con la fecha de compilación.
 export function TodayDate() {
   const mounted = useMounted();
+  const timeZone = useTimeZone();
   return (
     <p className="mt-1 min-h-5 text-sm text-muted-foreground first-letter:uppercase">
-      {mounted ? formatLongDate(new Date()) : " "}
+      {mounted ? formatLongDate(new Date(), timeZone) : " "}
     </p>
   );
 }

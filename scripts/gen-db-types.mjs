@@ -19,6 +19,17 @@ if (!res.ok) {
 }
 const spec = await res.json();
 
+// PostgREST no reporta los defaults de columnas jsonb ni de arreglos; estas sí tienen default
+// en supabase/migrations, así que son opcionales al insertar.
+const HIDDEN_DEFAULTS = new Set([
+  "entries.data",
+  "entries.ai_flags",
+  "template_versions.fields",
+  "samples.metadata",
+  "ai_suggestions.input_ref",
+  "attachments.ai_tags",
+]);
+
 function tsType(prop) {
   if (prop.type === "array") return `${tsType(prop.items ?? {})}[]`;
   if (prop.format === "jsonb" || prop.format === "json") return "Json";
@@ -48,7 +59,8 @@ for (const table of tables) {
   for (const [col, prop] of Object.entries(def.properties ?? {})) {
     const t = tsType(prop);
     const nullable = !required.has(col);
-    const optionalOnInsert = nullable || prop.default !== undefined;
+    const optionalOnInsert =
+      nullable || prop.default !== undefined || HIDDEN_DEFAULTS.has(`${table}.${col}`);
     const full = nullable ? `${t} | null` : t;
     row.push(`          ${col}: ${full};`);
     insert.push(`          ${col}${optionalOnInsert ? "?" : ""}: ${full};`);

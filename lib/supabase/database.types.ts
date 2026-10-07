@@ -21,7 +21,7 @@ export type Database = {
           user_id?: string;
           entry_id?: string | null;
           kind: string;
-          input_ref: Json;
+          input_ref?: Json;
           output?: Json | null;
           status?: string;
           created_at?: string;
@@ -81,7 +81,7 @@ export type Database = {
           caption?: string | null;
           ai_description?: string | null;
           ai_extracted_text?: string | null;
-          ai_tags: string[];
+          ai_tags?: string[];
           ai_status?: string;
           captured_at?: string;
           created_at?: string;
@@ -214,7 +214,7 @@ export type Database = {
           template_version: number;
           title?: string;
           objective?: string | null;
-          data: Json;
+          data?: Json;
           observations?: string | null;
           results?: string | null;
           next_steps?: string | null;
@@ -222,7 +222,7 @@ export type Database = {
           status?: string;
           closed_at?: string | null;
           void_reason?: string | null;
-          ai_flags: Json;
+          ai_flags?: Json;
           change_source?: string;
           search_vector?: string | null;
           created_at?: string;
@@ -487,7 +487,7 @@ export type Database = {
           code: string;
           sample_type: string;
           parent_id?: string | null;
-          metadata: Json;
+          metadata?: Json;
           status?: string;
           storage_location?: string | null;
           created_at?: string;
@@ -530,7 +530,7 @@ export type Database = {
           user_id?: string;
           template_id: string;
           version: number;
-          fields: Json;
+          fields?: Json;
           protocol_notes?: string | null;
           created_at?: string;
         };

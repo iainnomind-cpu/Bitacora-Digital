@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Camera, Inbox, ListTodo, Mic, NotebookPen, Plus } from "lucide-react";
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { Camera, Inbox, Mic, NotebookPen, Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { TodayDate } from "@/components/today/today-date";
+import { TodayEntries } from "@/components/today/today-entries";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -54,14 +54,7 @@ export default function HoyPage() {
         </p>
       </section>
 
-      <section aria-labelledby="linea-tiempo" className="mt-8">
-        <h2 id="linea-tiempo" className="mb-3 font-heading text-lg font-semibold">
-          Entradas del día
-        </h2>
-        <ComingSoon icon={ListTodo} title="Aún no hay entradas" stage="4">
-          Aquí aparecerá la línea de tiempo de las entradas de hoy.
-        </ComingSoon>
-      </section>
+      <TodayEntries />
     </>
   );
 }

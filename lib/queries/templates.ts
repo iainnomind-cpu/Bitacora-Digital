@@ -12,7 +12,39 @@ export type TemplateWithFields = Template & { fields: FieldDef[]; protocolNotes:
 export const templateKeys = {
   all: ["templates"] as const,
   detail: (id: string) => ["templates", id] as const,
+  version: (id: string, version: number) => ["templates", id, "v", version] as const,
 };
+
+/**
+ * Una versión concreta de plantilla (la que usó una entrada). Las versiones son inmutables,
+ * así que nunca se vuelven a pedir.
+ */
+export function useTemplateVersion(templateId: string | undefined, version: number | undefined) {
+  return useQuery({
+    queryKey: templateKeys.version(templateId ?? "", version ?? 0),
+    enabled: Boolean(templateId && version),
+    staleTime: Infinity,
+    queryFn: async () => {
+      const supabase = createClient();
+      const [t, v] = await Promise.all([
+        supabase.from("templates").select("*").eq("id", templateId!).single(),
+        supabase
+          .from("template_versions")
+          .select("fields, protocol_notes")
+          .eq("template_id", templateId!)
+          .eq("version", version!)
+          .single(),
+      ]);
+      if (t.error) throw t.error;
+      if (v.error) throw v.error;
+      return {
+        ...t.data,
+        fields: parseFields(v.data.fields),
+        protocolNotes: v.data.protocol_notes,
+      };
+    },
+  });
+}
 
 /** Plantillas activas con los campos de su versión vigente. */
 export function useTemplates() {

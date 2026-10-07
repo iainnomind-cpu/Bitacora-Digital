@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ComponentProps } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { joinDuration, splitDuration } from "@/lib/templates/duration";
 import { cn } from "@/lib/utils";
@@ -118,6 +119,52 @@ export function DurationInput({
           </span>
         </label>
       ))}
+    </div>
+  );
+}
+
+// datetime-local trabaja en la zona horaria del dispositivo; se guarda en UTC (ISO 8601).
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+/** Fecha y hora con botón "Ahora"; el valor es ISO 8601 en UTC. */
+export function DateTimeInput({
+  id,
+  value,
+  onChange,
+  disabled,
+  invalid,
+}: {
+  id?: string;
+  value: string | null;
+  onChange: (value: string | null) => void;
+  disabled?: boolean;
+  invalid?: boolean;
+}) {
+  return (
+    <div className="flex gap-2">
+      <Input
+        id={id}
+        type="datetime-local"
+        value={value ? toLocalInput(value) : ""}
+        onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : null)}
+        disabled={disabled}
+        aria-invalid={invalid || undefined}
+        className={fieldInputClass}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        className="h-12 px-4"
+        disabled={disabled}
+        onClick={() => onChange(new Date().toISOString())}
+      >
+        Ahora
+      </Button>
     </div>
   );
 }

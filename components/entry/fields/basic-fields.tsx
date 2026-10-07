@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { FieldOf, FieldType } from "@/lib/templates/fields";
 import { cn } from "@/lib/utils";
-import { chipClass, DurationInput, fieldInputClass, NumberInput } from "./inputs";
+import { chipClass, DateTimeInput, DurationInput, fieldInputClass, NumberInput } from "./inputs";
 
 export type FieldProps<T extends FieldType> = {
   id: string;
@@ -94,36 +94,15 @@ export function DurationField({
   );
 }
 
-// datetime-local trabaja en la zona horaria del dispositivo; se guarda en UTC (ISO 8601).
-function toLocalInput(iso: string) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 16);
-}
-
 export function DateTimeField({ id, value, onChange, disabled, invalid }: FieldProps<"datetime">) {
   return (
-    <div className="flex gap-2">
-      <Input
-        id={id}
-        type="datetime-local"
-        value={typeof value === "string" ? toLocalInput(value) : ""}
-        onChange={(e) => onChange(e.target.value ? new Date(e.target.value).toISOString() : null)}
-        disabled={disabled}
-        aria-invalid={invalid || undefined}
-        className={fieldInputClass}
-      />
-      <Button
-        type="button"
-        variant="outline"
-        className="h-12 px-4"
-        disabled={disabled}
-        onClick={() => onChange(new Date().toISOString())}
-      >
-        Ahora
-      </Button>
-    </div>
+    <DateTimeInput
+      id={id}
+      value={typeof value === "string" ? value : null}
+      onChange={onChange}
+      disabled={disabled}
+      invalid={invalid}
+    />
   );
 }
 
