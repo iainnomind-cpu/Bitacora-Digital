@@ -10,7 +10,8 @@ import {
   openai,
   requireUser,
 } from "@/lib/ai/server";
-import { LAB_VOCABULARY, TRANSCRIBE_PROMPT } from "@/lib/ai/vocabulary";
+import { labContext } from "@/lib/ai/context";
+import { GENERAL_VOCABULARY, transcribePrompt } from "@/lib/ai/vocabulary";
 import { extensionFor } from "@/lib/media/audio";
 
 // Una nota de voz de 10 min tarda decenas de segundos en transcribirse (§7.1).
@@ -60,15 +61,28 @@ export async function POST(request: NextRequest) {
       .select("code")
       .order("updated_at", { ascending: false })
       .limit(40);
-    const keywords = [...LAB_VOCABULARY, ...(samples ?? []).map((s) => s.code)].filter(
-      (k) => !/[<>\r\n]/.test(k),
+    // Proyecto de la entrada del audio (o el activo si está en la bandeja).
+    const { data: entry } = attachment.entry_id
+      ? await supabase
+          .from("entries")
+          .select("project_id")
+          .eq("id", attachment.entry_id)
+          .maybeSingle()
+      : { data: null };
+    const ctx = await labContext(
+      supabase,
+      attachment.entry_id ? (entry?.project_id ?? null) : undefined,
     );
+    const vocabulary = ctx.vocabulary.length ? ctx.vocabulary : GENERAL_VOCABULARY;
+    const keywords = [...vocabulary, ...(samples ?? []).map((s) => s.code)]
+      .slice(0, 80)
+      .filter((k) => !/[<>\r\n]/.test(k));
 
     const result = await openai().audio.transcriptions.create({
       model: m,
       file,
       languages: ["es"],
-      prompt: TRANSCRIBE_PROMPT,
+      prompt: transcribePrompt(ctx.text),
       keywords,
     });
     logUsage({

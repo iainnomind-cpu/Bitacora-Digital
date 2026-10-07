@@ -1,25 +1,13 @@
 import "server-only";
 import { z } from "zod";
 import type { Tables } from "@/lib/supabase/database.types";
+import { contextBlock, labContext } from "./context";
 import { PHOTO_INSTRUCTIONS } from "./prompts";
 import { AiError, structuredCall, type requireUser } from "./server";
 
 type Supabase = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
-export const ACTIVITY_TYPES = [
-  "perfusion_fijacion",
-  "postfijacion",
-  "inclusion_resina",
-  "navaja_vidrio",
-  "corte_semifino",
-  "corte_fino",
-  "tincion",
-  "contraste_rejillas",
-  "microct",
-  "tratamiento_farmaco",
-] as const;
-
-const photoJsonSchema = {
+const photoJsonSchema = (activities: string[]) => ({
   type: "object",
   additionalProperties: false,
   required: ["description", "extracted_text", "activity", "object_type", "sample_codes"],
@@ -29,22 +17,31 @@ const photoJsonSchema = {
       type: ["string", "null"],
       description: "Texto legible: etiquetas, pantallas de equipos, escritura a mano",
     },
-    activity: { type: ["string", "null"], enum: [...ACTIVITY_TYPES, null] },
+    activity: { type: ["string", "null"], enum: [...activities, null] },
     object_type: {
       type: ["string", "null"],
       description: "rejilla, bloque, corte, navaja, laminilla, animal, equipo, pantalla, etiqueta…",
     },
     sample_codes: { type: "array", items: { type: "string" } },
   },
-};
+});
 
 const photoSchema = z.object({
   description: z.string(),
   extracted_text: z.string().nullable(),
-  activity: z.enum(ACTIVITY_TYPES).nullable(),
+  activity: z.string().nullable(),
   object_type: z.string().nullable(),
   sample_codes: z.array(z.string()),
 });
+
+/** Contexto para analizar fotos: el del laboratorio y las actividades de sus plantillas. */
+export async function photoContext(supabase: Supabase) {
+  const [{ text }, { data: templates }] = await Promise.all([
+    labContext(supabase),
+    supabase.from("templates").select("activity_type").eq("is_archived", false),
+  ]);
+  return { text, activities: [...new Set((templates ?? []).map((t) => t.activity_type))] };
+}
 
 /**
  * Describe una foto, lee su texto y la etiqueta (§7.6). Guarda ai_description,
@@ -55,6 +52,7 @@ export async function analyzePhoto(
   supabase: Supabase,
   userId: string,
   attachment: Pick<Tables<"attachments">, "id" | "storage_path" | "caption">,
+  context: { text: string; activities: string[] },
 ) {
   if (!attachment.storage_path) throw new AiError("La foto no tiene archivo.", 400);
   const signed = await supabase.storage
@@ -68,7 +66,7 @@ export async function analyzePhoto(
       userId,
       modelKind: "vision",
       name: "analisis_foto",
-      schema: photoJsonSchema,
+      schema: photoJsonSchema(context.activities.length ? context.activities : ["libre"]),
       instructions: PHOTO_INSTRUCTIONS,
       input: [
         {
@@ -79,6 +77,15 @@ export async function analyzePhoto(
               text: attachment.caption
                 ? `Pie de foto del usuario: ${attachment.caption}`
                 : "Foto tomada durante el trabajo en el laboratorio.",
+            },
+            {
+              type: "input_text",
+              text: [
+                contextBlock(context.text),
+                `Actividades posibles: ${context.activities.join(", ")}`,
+              ]
+                .filter(Boolean)
+                .join("\n\n"),
             },
             { type: "input_image", image_url: signed.data.signedUrl, detail: "low" },
           ],

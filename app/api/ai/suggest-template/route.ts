@@ -13,6 +13,7 @@ import {
   requireUser,
   structuredCall,
 } from "@/lib/ai/server";
+import { contextBlock, labContext } from "@/lib/ai/context";
 import { matchActivities } from "@/lib/ai/template-rules";
 import { dateInTimeZone, DEFAULT_TIMEZONE } from "@/lib/datetime";
 import type { Json } from "@/lib/supabase/database.types";
@@ -87,7 +88,9 @@ export async function POST(request: NextRequest) {
     const now = new Intl.DateTimeFormat("es-MX", { timeStyle: "short", timeZone }).format(
       new Date(),
     );
+    const ctx = await labContext(supabase);
     const input = [
+      contextBlock(ctx.text),
       `Lo que dijo el usuario:\n"""${text}"""`,
       `Hora local: ${now}`,
       `Entradas de hoy: ${

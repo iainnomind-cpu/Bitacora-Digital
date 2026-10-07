@@ -8,6 +8,7 @@ import { dateInTimeZone, formatEntryDate, formatTime } from "@/lib/datetime";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { useEntriesOfDay, usePendingDrafts } from "@/lib/queries/entries";
 import { useTimeZone } from "@/lib/queries/profile";
+import { useActiveProject } from "@/lib/queries/projects";
 import { useTemplates } from "@/lib/queries/templates";
 
 type Summary = NonNullable<ReturnType<typeof useEntriesOfDay>["data"]>[number];
@@ -18,19 +19,20 @@ export function TodayEntries() {
   const timeZone = useTimeZone();
   // La fecha se calcula en el navegador: la página se prerenderiza.
   const today = mounted ? dateInTimeZone(new Date(), timeZone) : "";
-  if (!today) {
+  const active = useActiveProject();
+  if (!today || active.isPending) {
     return (
       <div className="mt-8">
         <ListSkeleton />
       </div>
     );
   }
-  return <Lists today={today} />;
+  return <Lists today={today} projectId={active.id} />;
 }
 
-function Lists({ today }: { today: string }) {
-  const entries = useEntriesOfDay(today);
-  const pending = usePendingDrafts(today);
+function Lists({ today, projectId }: { today: string; projectId: string | null }) {
+  const entries = useEntriesOfDay(today, projectId);
+  const pending = usePendingDrafts(today, projectId);
 
   return (
     <>

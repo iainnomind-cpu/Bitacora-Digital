@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+import { contextBlock, labContext } from "@/lib/ai/context";
 import { CHECK_INSTRUCTIONS } from "@/lib/ai/prompts";
 import { checkResponseJsonSchema, checkResponseSchema } from "@/lib/ai/schemas";
 import {
@@ -63,7 +64,13 @@ export async function POST(request: NextRequest) {
       name: "revision_protocolo",
       schema: checkResponseJsonSchema,
       instructions: CHECK_INSTRUCTIONS,
-      input: `Protocolo estándar:\n${version.protocol_notes}\n\nLo registrado en la entrada:\n${registered}`,
+      input: [
+        contextBlock((await labContext(supabase, entry.project_id)).text),
+        `Protocolo estándar:\n${version.protocol_notes}`,
+        `Lo registrado en la entrada:\n${registered}`,
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
     });
     const parsed = checkResponseSchema.safeParse(json);
     if (!parsed.success) throw new AiError("La IA regresó una revisión inválida.", 502);

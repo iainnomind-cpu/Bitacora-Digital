@@ -13,6 +13,7 @@ import { useSuggestTemplate } from "@/lib/queries/ai";
 import { assignAttachments } from "@/lib/queries/attachments";
 import { useCreateEntry, useTemplateUsage } from "@/lib/queries/entries";
 import { useTimeZone } from "@/lib/queries/profile";
+import { useActiveProject } from "@/lib/queries/projects";
 import { useTemplates, type TemplateWithFields } from "@/lib/queries/templates";
 import { initialValues } from "@/lib/templates/values";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ export function TemplatePicker() {
   const templates = useTemplates();
   const usage = useTemplateUsage();
   const create = useCreateEntry();
+  const active = useActiveProject();
   const [chosen, setChosen] = useState<string | null>(null);
 
   if (templates.isPending || usage.isPending) {
@@ -67,6 +69,7 @@ export function TemplatePicker() {
         templateVersion: t.current_version,
         title,
         data: initialValues(t.fields),
+        projectId: active.id,
       },
       {
         onSuccess: async (entry) => {
@@ -87,6 +90,11 @@ export function TemplatePicker() {
 
   return (
     <div className="flex flex-col gap-3">
+      {active.project && (
+        <p className="text-sm text-muted-foreground">
+          Proyecto: <span className="font-medium text-foreground">{active.project.name}</span>
+        </p>
+      )}
       {attachmentIds.length > 0 && (
         <p className="rounded-xl bg-muted px-4 py-3 text-sm">
           {attachmentIds.length === 1

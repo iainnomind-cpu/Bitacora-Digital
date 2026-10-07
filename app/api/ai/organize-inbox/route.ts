@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { DEFAULT_GAP_MINUTES, extractCodes, pregroup } from "@/lib/ai/grouping";
-import { analyzePhoto } from "@/lib/ai/photo";
+import { contextBlock, labContext } from "@/lib/ai/context";
+import { analyzePhoto, photoContext } from "@/lib/ai/photo";
 import { ORGANIZE_INSTRUCTIONS } from "@/lib/ai/prompts";
 import { organizeResponseJsonSchema, organizeResponseSchema } from "@/lib/ai/schemas";
 import {
@@ -42,8 +43,9 @@ export async function POST() {
     const pendingPhotos = inbox
       .filter((a) => a.kind === "foto" && a.ai_status === "pendiente")
       .slice(0, MAX_PHOTO_ANALYSES);
+    const pContext = pendingPhotos.length ? await photoContext(supabase) : null;
     const analyzed = await Promise.allSettled(
-      pendingPhotos.map((a) => analyzePhoto(supabase, userId, a)),
+      pendingPhotos.map((a) => analyzePhoto(supabase, userId, a, pContext!)),
     );
     analyzed.forEach((r, i) => {
       if (r.status === "fulfilled") Object.assign(pendingPhotos[i], r.value);
@@ -105,7 +107,9 @@ export async function POST() {
       );
     const templateName = new Map(templates.map((t) => [t.id, t.name]));
 
+    const ctx = await labContext(supabase);
     const input = [
+      contextBlock(ctx.text),
       `Grupos candidatos (JSON):\n${JSON.stringify(
         candidates.map((ids, i) => ({
           grupo: i + 1,
@@ -133,7 +137,9 @@ export async function POST() {
           inicio: d.started_at ? fmt(d.started_at) : null,
         })),
       )}`,
-    ].join("\n\n");
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     const { model: m, json } = await structuredCall({
       kind: "agrupacion_bandeja",

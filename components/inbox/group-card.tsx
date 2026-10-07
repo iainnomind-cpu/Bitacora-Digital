@@ -12,6 +12,7 @@ import { useTranscriptions } from "@/lib/queries/ai";
 import { useSignedUrls, type Attachment } from "@/lib/queries/attachments";
 import { useRecentDrafts } from "@/lib/queries/entries";
 import { useAcceptGroup, useUpdateGroup, type CaptureGroup } from "@/lib/queries/inbox";
+import { useActiveProject } from "@/lib/queries/projects";
 import type { TemplateWithFields } from "@/lib/queries/templates";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,7 @@ export function GroupCard({
   const router = useRouter();
   const drafts = useRecentDrafts();
   const accept = useAcceptGroup();
+  const active = useActiveProject();
   const update = useUpdateGroup();
 
   const [templateId, setTemplateId] = useState(group.suggested_template_id ?? "");
@@ -65,6 +67,7 @@ export function GroupCard({
         title,
         modified,
         timeZone,
+        projectId: active.id,
       },
       { onSuccess: (entryId) => router.push(`/entrada/${entryId}`) },
     );

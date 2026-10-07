@@ -64,6 +64,7 @@ export type GroupDecision = {
   /** El usuario cambió plantilla, destino, título o adjuntos respecto a la propuesta. */
   modified: boolean;
   timeZone: string;
+  projectId?: string | null;
 };
 
 /**
@@ -90,6 +91,7 @@ export async function acceptGroup(d: GroupDecision): Promise<string> {
         template_version: d.template.current_version,
         title: d.title.trim() || d.template.name,
         data: initialValues(d.template.fields) as Json,
+        project_id: d.projectId ?? null,
       })
       .select("id")
       .single();

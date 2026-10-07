@@ -19,6 +19,7 @@ import {
   type CaptureGroup,
 } from "@/lib/queries/inbox";
 import { useTimeZone } from "@/lib/queries/profile";
+import { useActiveProject } from "@/lib/queries/projects";
 import { useTemplates, type TemplateWithFields } from "@/lib/queries/templates";
 import { GroupCard } from "./group-card";
 
@@ -270,6 +271,7 @@ function AcceptConfident({
   timeZone: string;
 }) {
   const queryClient = useQueryClient();
+  const active = useActiveProject();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const confident = cards.filter(
@@ -293,6 +295,7 @@ function AcceptConfident({
           title: group.suggested_title ?? "",
           modified: false,
           timeZone,
+          projectId: active.id,
         });
         ok++;
       } catch {

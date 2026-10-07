@@ -5,6 +5,7 @@ import { ChevronRight, LayoutTemplate } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { AccountCard } from "@/components/settings/account-card";
 import { InstallCard } from "@/components/settings/install-card";
+import { LabCard } from "@/components/settings/lab-card";
 import { NotificationsCard } from "@/components/settings/notifications-card";
 import { RemindersCard } from "@/components/settings/reminders-card";
 import { ThemePicker } from "@/components/settings/theme-picker";
@@ -21,6 +22,15 @@ export default function AjustesPage() {
             Apariencia
           </h2>
           <ThemePicker />
+        </section>
+        <section aria-labelledby="laboratorio">
+          <h2 id="laboratorio" className="mb-1 font-heading text-lg font-semibold">
+            Mi laboratorio
+          </h2>
+          <p className="mb-3 text-sm text-muted-foreground">
+            La IA usa esto para entender tus técnicas, siglas y reactivos.
+          </p>
+          <LabCard />
         </section>
         <section aria-labelledby="bitacora">
           <h2 id="bitacora" className="mb-3 font-heading text-lg font-semibold">

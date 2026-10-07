@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
+import { contextBlock, labContext } from "@/lib/ai/context";
 import { FILL_INSTRUCTIONS } from "@/lib/ai/prompts";
 import { fillResponseJsonSchema, fillResponseSchema } from "@/lib/ai/schemas";
 import {
@@ -103,7 +104,9 @@ export async function POST(request: NextRequest) {
       .order("updated_at", { ascending: false })
       .limit(300);
 
+    const ctx = await labContext(supabase, entry.project_id);
     const input = [
+      contextBlock(ctx.text),
       `Plantilla: ${template.name}${template.description ? ` — ${template.description}` : ""}`,
       version.protocol_notes ? `Protocolo estándar:\n${version.protocol_notes}` : "",
       `Campos (JSON):\n${JSON.stringify(fields.map(describeField))}`,

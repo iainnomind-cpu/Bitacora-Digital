@@ -13,6 +13,7 @@ import { formatEntryDate } from "@/lib/datetime";
 import { isEmptySearch, useEntrySearch, type SearchFilters } from "@/lib/queries/search";
 import { useTemplates } from "@/lib/queries/templates";
 import { flattenData, snippet } from "@/lib/search/text";
+import { useProjects } from "@/lib/queries/projects";
 import { useSampleTypes } from "@/lib/queries/sample-types";
 
 const DEBOUNCE_MS = 350;
@@ -25,6 +26,7 @@ function readFilters(params: URLSearchParams): SearchFilters {
     from: params.get("desde"),
     to: params.get("hasta"),
     templateId: params.get("plantilla"),
+    projectId: params.get("proyecto"),
     includeVoided: params.get("anuladas") === "1",
   };
 }
@@ -35,6 +37,7 @@ function toParams(f: SearchFilters) {
   if (f.from) p.set("desde", f.from);
   if (f.to) p.set("hasta", f.to);
   if (f.templateId) p.set("plantilla", f.templateId);
+  if (f.projectId) p.set("proyecto", f.projectId);
   if (f.includeVoided) p.set("anuladas", "1");
   return p.toString();
 }
@@ -46,11 +49,18 @@ export function SearchView() {
   const params = useSearchParams();
   const templates = useTemplates();
   const sampleTypes = useSampleTypes();
+  const projects = useProjects();
 
   const [filters, setFilters] = useState(() => readFilters(params));
   const [text, setText] = useState(filters.q);
   const [showFilters, setShowFilters] = useState(
-    Boolean(filters.from || filters.to || filters.templateId || filters.includeVoided),
+    Boolean(
+      filters.from ||
+      filters.to ||
+      filters.templateId ||
+      filters.projectId ||
+      filters.includeVoided,
+    ),
   );
 
   // La caja de texto aplica tras una pausa; los filtros, al instante.
@@ -75,6 +85,7 @@ export function SearchView() {
     filters.from,
     filters.to,
     filters.templateId,
+    filters.projectId,
     filters.includeVoided,
   ].filter(Boolean).length;
 
@@ -156,6 +167,24 @@ export function SearchView() {
               ))}
             </select>
           </div>
+          {projects.data && projects.data.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="proyecto">Proyecto</Label>
+              <select
+                id="proyecto"
+                value={filters.projectId ?? ""}
+                onChange={(e) => set({ projectId: e.target.value || null })}
+                className={selectClass}
+              >
+                <option value="">Todos</option>
+                {projects.data.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <label className="flex min-h-12 items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -169,7 +198,15 @@ export function SearchView() {
             <Button
               variant="ghost"
               className="h-12"
-              onClick={() => set({ from: null, to: null, templateId: null, includeVoided: false })}
+              onClick={() =>
+                set({
+                  from: null,
+                  to: null,
+                  templateId: null,
+                  projectId: null,
+                  includeVoided: false,
+                })
+              }
             >
               <X className="size-4" aria-hidden />
               Quitar filtros

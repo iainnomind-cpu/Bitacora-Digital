@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { CaptureBar } from "@/components/attachments/capture-bar";
 import { PageHeader } from "@/components/layout/page-header";
+import { ProjectSwitcher } from "@/components/projects/project-switcher";
 import { TodayDate } from "@/components/today/today-date";
 import { InboxLink } from "@/components/today/inbox-link";
 import { TodayEntries } from "@/components/today/today-entries";
@@ -17,6 +18,9 @@ export default function HoyPage() {
       <PageHeader title="Hoy">
         <TodayDate />
       </PageHeader>
+      <div className="-mt-4 mb-3">
+        <ProjectSwitcher />
+      </div>
 
       <Link
         href="/entrada/nueva"

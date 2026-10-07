@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type OpenAI from "openai";
 import { z } from "zod";
 import { TEMPLATE_COLORS, TEMPLATE_ICONS } from "@/components/templates/template-icon";
+import { contextBlock, labContext } from "@/lib/ai/context";
 import { protocolJsonSchema, protocolResponseSchema, protocolToDraft } from "@/lib/ai/protocol";
 import { PROTOCOL_INSTRUCTIONS } from "@/lib/ai/prompts";
 import {
@@ -70,6 +71,8 @@ export async function POST(request: NextRequest) {
       .select("key, label")
       .eq("is_archived", false);
     const sampleTypes = (types ?? []).map((t) => t.key);
+    const ctx = await labContext(supabase);
+    if (ctx.text) content.push({ type: "input_text", text: contextBlock(ctx.text) });
     content.push({
       type: "input_text",
       text: `Tipos de muestra del usuario (clave: nombre): ${(types ?? []).map((t) => `${t.key}: ${t.label}`).join("; ")}`,

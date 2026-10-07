@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { analyzePhoto } from "@/lib/ai/photo";
+import { analyzePhoto, photoContext } from "@/lib/ai/photo";
 import { AiError, enforceDailyLimit, errorResponse, requireUser } from "@/lib/ai/server";
 
 export const maxDuration = 60;
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       throw new AiError("No se encontró la foto.", 404);
 
     await enforceDailyLimit(supabase);
-    const updated = await analyzePhoto(supabase, userId, attachment);
+    const updated = await analyzePhoto(supabase, userId, attachment, await photoContext(supabase));
     return NextResponse.json({ attachment: updated });
   } catch (e) {
     return errorResponse(e);

@@ -9,6 +9,7 @@ export type SearchFilters = {
   from: string | null;
   to: string | null;
   templateId: string | null;
+  projectId: string | null;
   includeVoided: boolean;
 };
 
@@ -16,7 +17,7 @@ const COLUMNS =
   "id, title, status, entry_date, started_at, template_id, objective, observations, results, next_steps, data_location, data";
 const LIMIT = 50;
 
-export const isEmptySearch = (f: SearchFilters) => !f.q.trim() && !f.from && !f.to && !f.templateId;
+export const isEmptySearch = (f: SearchFilters) => !f.q.trim() && !f.from && !f.to && !f.templateId && !f.projectId;
 
 // Escapa comodines de LIKE para buscar el código literal.
 const likeLiteral = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);
@@ -41,6 +42,7 @@ export function useEntrySearch(filters: SearchFilters) {
         if (filters.from) query = query.gte("entry_date", filters.from);
         if (filters.to) query = query.lte("entry_date", filters.to);
         if (filters.templateId) query = query.eq("template_id", filters.templateId);
+        if (filters.projectId) query = query.eq("project_id", filters.projectId);
         if (!filters.includeVoided) query = query.neq("status", "anulada");
         return query;
       };

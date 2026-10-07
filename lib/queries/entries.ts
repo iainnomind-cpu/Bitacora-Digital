@@ -22,20 +22,22 @@ export type EntryDraft = Pick<
   | "data_location"
   | "started_at"
   | "ended_at"
+  | "project_id"
 > & { data: EntryData };
 
 export const entryKeys = {
   all: ["entries"] as const,
   detail: (id: string) => ["entries", "detail", id] as const,
-  day: (date: string) => ["entries", "day", date] as const,
-  pendingDrafts: (before: string) => ["entries", "pending", before] as const,
+  day: (date: string, projectId: string | null = null) => ["entries", "day", date, projectId] as const,
+  pendingDrafts: (before: string, projectId: string | null = null) =>
+    ["entries", "pending", before, projectId] as const,
   templateUsage: ["entries", "template-usage"] as const,
   recentDrafts: ["entries", "recent-drafts"] as const,
   revisions: (id: string) => ["entries", "revisions", id] as const,
   addenda: (id: string) => ["entries", "addenda", id] as const,
 };
 
-const SUMMARY_COLUMNS = "id, title, status, entry_date, started_at, ended_at, template_id";
+const SUMMARY_COLUMNS = "id, title, status, entry_date, started_at, ended_at, template_id, project_id";
 
 export function useEntry(id: string) {
   return useQuery({
@@ -53,14 +55,14 @@ export function useEntry(id: string) {
   });
 }
 
-/** Entradas de un día (sin las anuladas), en orden de inicio. */
-export function useEntriesOfDay(date: string) {
+/** Entradas de un día (sin las anuladas), en orden de inicio; opcionalmente de un proyecto. */
+export function useEntriesOfDay(date: string, projectId: string | null = null) {
   return useQuery({
-    queryKey: entryKeys.day(date),
+    queryKey: entryKeys.day(date, projectId),
     queryFn: async () => {
-      const { data, error } = await createClient()
-        .from("entries")
-        .select(SUMMARY_COLUMNS)
+      let query = createClient().from("entries").select(SUMMARY_COLUMNS);
+      if (projectId) query = query.eq("project_id", projectId);
+      const { data, error } = await query
         .eq("entry_date", date)
         .neq("status", "anulada")
         .order("started_at", { ascending: true, nullsFirst: false });
@@ -71,13 +73,13 @@ export function useEntriesOfDay(date: string) {
 }
 
 /** Borradores de días anteriores que siguen sin cerrar. */
-export function usePendingDrafts(before: string) {
+export function usePendingDrafts(before: string, projectId: string | null = null) {
   return useQuery({
-    queryKey: entryKeys.pendingDrafts(before),
+    queryKey: entryKeys.pendingDrafts(before, projectId),
     queryFn: async () => {
-      const { data, error } = await createClient()
-        .from("entries")
-        .select(SUMMARY_COLUMNS)
+      let query = createClient().from("entries").select(SUMMARY_COLUMNS);
+      if (projectId) query = query.eq("project_id", projectId);
+      const { data, error } = await query
         .eq("status", "borrador")
         .lt("entry_date", before)
         .order("entry_date", { ascending: false });
@@ -132,6 +134,7 @@ export function useCreateEntry() {
       templateVersion: number;
       title: string;
       data: EntryData;
+      projectId?: string | null;
     }) => {
       const { data, error } = await createClient()
         .from("entries")
@@ -142,6 +145,7 @@ export function useCreateEntry() {
           template_version: input.templateVersion,
           title: input.title,
           data: input.data as Json,
+          project_id: input.projectId ?? null,
         })
         .select("*")
         .single();

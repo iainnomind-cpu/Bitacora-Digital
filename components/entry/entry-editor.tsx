@@ -21,6 +21,7 @@ import {
 } from "@/lib/queries/entries";
 import { resolveSuggestion, useFillTemplate, usePendingFill } from "@/lib/queries/ai";
 import { useTimeZone } from "@/lib/queries/profile";
+import { useProjects } from "@/lib/queries/projects";
 import { syncEntrySamples } from "@/lib/queries/samples";
 import { useTemplateVersion, type TemplateWithFields } from "@/lib/queries/templates";
 import { validateEntryData, type EntryData } from "@/lib/templates/values";
@@ -74,6 +75,7 @@ function toDraft(entry: Entry): EntryDraft {
     data_location: entry.data_location,
     started_at: entry.started_at,
     ended_at: entry.ended_at,
+    project_id: entry.project_id,
     data: (entry.data ?? {}) as EntryData,
   };
 }
@@ -272,6 +274,8 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
         </div>
       </div>
 
+      <ProjectField value={draft.project_id} onChange={(v) => update({ project_id: v })} />
+
       <CommonField
         k="objective"
         value={draft.objective}
@@ -462,5 +466,37 @@ function SaveIndicator({ status, onRetry }: { status: AutosaveStatus; onRetry: (
     <span role="status" className="flex items-center gap-1 text-sm text-muted-foreground">
       {content}
     </span>
+  );
+}
+
+function ProjectField({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (value: string | null) => void;
+}) {
+  const projects = useProjects();
+  const list = (projects.data ?? []).filter((p) => p.status === "activo" || p.id === value);
+  if (!list.length) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="entry-project" className="text-base">
+        Proyecto
+      </Label>
+      <select
+        id="entry-project"
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value || null)}
+        className="h-12 w-full rounded-lg border border-input bg-transparent px-2.5 text-base dark:bg-input/30"
+      >
+        <option value="">Sin proyecto</option>
+        {list.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
