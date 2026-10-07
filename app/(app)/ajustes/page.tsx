@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { ChevronRight, LayoutTemplate } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { AccountCard } from "@/components/settings/account-card";
+import { InstallCard } from "@/components/settings/install-card";
+import { NotificationsCard } from "@/components/settings/notifications-card";
+import { RemindersCard } from "@/components/settings/reminders-card";
 import { ThemePicker } from "@/components/settings/theme-picker";
 
 export const metadata: Metadata = { title: "Ajustes" };
@@ -31,6 +34,25 @@ export default function AjustesPage() {
             <span className="flex-1 font-medium">Plantillas</span>
             <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
           </Link>
+        </section>
+        <section aria-labelledby="notificaciones">
+          <h2 id="notificaciones" className="mb-3 font-heading text-lg font-semibold">
+            Notificaciones
+          </h2>
+          <NotificationsCard />
+        </section>
+        <section aria-labelledby="recordatorios">
+          <h2 id="recordatorios" className="mb-1 font-heading text-lg font-semibold">
+            Recordatorios
+          </h2>
+          <p className="mb-3 text-sm text-muted-foreground">En tu zona horaria.</p>
+          <RemindersCard />
+        </section>
+        <section aria-labelledby="instalar">
+          <h2 id="instalar" className="mb-3 font-heading text-lg font-semibold">
+            Instalar la app
+          </h2>
+          <InstallCard />
         </section>
         <section aria-labelledby="cuenta">
           <h2 id="cuenta" className="mb-3 font-heading text-lg font-semibold">

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,6 +18,10 @@ export const metadata: Metadata = {
   title: { default: "Bitácora", template: "%s · Bitácora" },
   description: "Bitácora de laboratorio digital",
   applicationName: "Bitácora",
+  // iOS: ícono y modo app al agregar a la pantalla de inicio (§8: push solo funciona instalada).
+  appleWebApp: { capable: true, title: "Bitácora", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -36,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <Providers>{children}</Providers>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
