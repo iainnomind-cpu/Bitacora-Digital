@@ -1,19 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { TemplateIcon } from "@/components/templates/template-icon";
 import { dateInTimeZone } from "@/lib/datetime";
+import { assignAttachments } from "@/lib/queries/attachments";
 import { useCreateEntry, useTemplateUsage } from "@/lib/queries/entries";
 import { useTimeZone } from "@/lib/queries/profile";
 import { useTemplates, type TemplateWithFields } from "@/lib/queries/templates";
 import { initialValues } from "@/lib/templates/values";
 import { cn } from "@/lib/utils";
 
-/** Selector de plantilla (§9.2): las más usadas primero; al tocar una se crea la entrada. */
+/**
+ * Selector de plantilla (§9.2): las más usadas primero; al tocar una se crea la entrada.
+ * Con `?adjuntos=id,id` (desde la bandeja) esos adjuntos pasan a la entrada nueva.
+ */
 export function TemplatePicker() {
   const router = useRouter();
+  const attachmentIds = (useSearchParams().get("adjuntos") ?? "")
+    .split(",")
+    .filter((id) => z.uuid().safeParse(id).success);
+  const [assignError, setAssignError] = useState<string | null>(null);
   const timeZone = useTimeZone();
   const templates = useTemplates();
   const usage = useTemplateUsage();
@@ -56,7 +65,17 @@ export function TemplatePicker() {
         data: initialValues(t.fields),
       },
       {
-        onSuccess: (entry) => router.replace(`/entrada/${entry.id}`),
+        onSuccess: async (entry) => {
+          if (attachmentIds.length > 0) {
+            try {
+              await assignAttachments(attachmentIds, entry.id);
+            } catch (e) {
+              // La entrada ya existe; los adjuntos siguen en la bandeja para asignarlos de nuevo.
+              setAssignError(e instanceof Error ? e.message : String(e));
+            }
+          }
+          router.replace(`/entrada/${entry.id}`);
+        },
         onError: () => setChosen(null),
       },
     );
@@ -64,6 +83,18 @@ export function TemplatePicker() {
 
   return (
     <div className="flex flex-col gap-3">
+      {attachmentIds.length > 0 && (
+        <p className="rounded-xl bg-muted px-4 py-3 text-sm">
+          {attachmentIds.length === 1
+            ? "El adjunto seleccionado se agregará a la entrada nueva."
+            : `Los ${attachmentIds.length} adjuntos seleccionados se agregarán a la entrada nueva.`}
+        </p>
+      )}
+      {assignError && (
+        <p role="alert" className="text-sm text-destructive">
+          No se pudieron mover los adjuntos: {assignError}
+        </p>
+      )}
       {create.error && (
         <p role="alert" className="text-sm text-destructive">
           No se pudo crear la entrada: {create.error.message}

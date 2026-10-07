@@ -30,6 +30,7 @@ export const entryKeys = {
   day: (date: string) => ["entries", "day", date] as const,
   pendingDrafts: (before: string) => ["entries", "pending", before] as const,
   templateUsage: ["entries", "template-usage"] as const,
+  recentDrafts: ["entries", "recent-drafts"] as const,
   revisions: (id: string) => ["entries", "revisions", id] as const,
   addenda: (id: string) => ["entries", "addenda", id] as const,
 };
@@ -80,6 +81,24 @@ export function usePendingDrafts(before: string) {
         .eq("status", "borrador")
         .lt("entry_date", before)
         .order("entry_date", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+/** Borradores más recientes (destinos posibles para los adjuntos de la bandeja). */
+export function useRecentDrafts() {
+  return useQuery({
+    queryKey: entryKeys.recentDrafts,
+    queryFn: async () => {
+      const { data, error } = await createClient()
+        .from("entries")
+        .select(SUMMARY_COLUMNS)
+        .eq("status", "borrador")
+        .order("entry_date", { ascending: false })
+        .order("started_at", { ascending: false, nullsFirst: false })
+        .limit(20);
       if (error) throw error;
       return data;
     },

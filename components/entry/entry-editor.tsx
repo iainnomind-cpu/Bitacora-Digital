@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { use, useCallback, useState } from "react";
 import { AlertCircle, Check, CloudUpload, Loader2, Lock } from "lucide-react";
+import { EntryAttachments } from "@/components/attachments/entry-attachments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -212,6 +213,8 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
           />
         </section>
       )}
+
+      <EntryAttachments entryId={entry.id} editable />
 
       <section aria-labelledby="cierre-dia" className="flex flex-col gap-4">
         <h2 id="cierre-dia" className="border-b pb-2 font-heading text-lg font-semibold">

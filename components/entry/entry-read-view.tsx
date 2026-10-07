@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Ban, MessageSquarePlus } from "lucide-react";
+import { EntryAttachments } from "@/components/attachments/entry-attachments";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +66,8 @@ export function EntryReadView({ entry, template }: { entry: Entry; template: Tem
           />
         ))}
       </dl>
+
+      <EntryAttachments entryId={entry.id} editable={false} />
 
       <Addenda entry={entry} />
 
