@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Search } from "lucide-react";
-import { ComingSoon } from "@/components/layout/coming-soon";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/layout/page-header";
+import { SearchView } from "@/components/search/search-view";
 
 export const metadata: Metadata = { title: "Buscar" };
 
@@ -9,9 +9,10 @@ export default function BuscarPage() {
   return (
     <>
       <PageHeader title="Buscar" />
-      <ComingSoon icon={Search} title="Búsqueda" stage="8">
-        Texto completo en español y filtros por fecha, actividad y código de muestra.
-      </ComingSoon>
+      {/* useSearchParams es dato de tiempo de ejecución (cacheComponents). */}
+      <Suspense fallback={<div className="h-12 animate-pulse rounded-xl bg-muted" />}>
+        <SearchView />
+      </Suspense>
     </>
   );
 }
