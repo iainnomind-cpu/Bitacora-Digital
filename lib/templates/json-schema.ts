@@ -1,4 +1,4 @@
-import { REAGENT_PARTS, SAMPLE_TYPE_LABELS, type FieldDef } from "./fields";
+import { REAGENT_PARTS, sampleTypeLabel, type FieldDef } from "./fields";
 
 // JSON Schema de los campos de una plantilla para "structured outputs" del modelo de texto
 // (§7.2). Sigue las reglas del modo estricto: todas las propiedades en `required`,
@@ -79,7 +79,7 @@ export function fieldJsonSchema(field: FieldDef): JsonSchema {
         description: describe(field, "Calidad del 1 (mala) al 5 (excelente)"),
       };
     case "sample_ref": {
-      const extra = `Código de ${SAMPLE_TYPE_LABELS[field.sample_type].toLowerCase()} tal como se dictó`;
+      const extra = `Código de ${sampleTypeLabel(field.sample_type).toLowerCase()} tal como se dictó`;
       return field.multiple
         ? {
             type: nullable("array"),

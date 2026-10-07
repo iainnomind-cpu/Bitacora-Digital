@@ -13,7 +13,7 @@ import { formatEntryDate } from "@/lib/datetime";
 import { isEmptySearch, useEntrySearch, type SearchFilters } from "@/lib/queries/search";
 import { useTemplates } from "@/lib/queries/templates";
 import { flattenData, snippet } from "@/lib/search/text";
-import { SAMPLE_TYPE_LABELS, type SampleType } from "@/lib/templates/fields";
+import { useSampleTypes } from "@/lib/queries/sample-types";
 
 const DEBOUNCE_MS = 350;
 const selectClass =
@@ -45,6 +45,7 @@ export function SearchView() {
   const pathname = usePathname();
   const params = useSearchParams();
   const templates = useTemplates();
+  const sampleTypes = useSampleTypes();
 
   const [filters, setFilters] = useState(() => readFilters(params));
   const [text, setText] = useState(filters.q);
@@ -205,7 +206,7 @@ export function SearchView() {
                       <FlaskConical className="size-4 text-muted-foreground" aria-hidden />
                       <span className="font-mono">{s.code}</span>
                       <span className="text-muted-foreground">
-                        {SAMPLE_TYPE_LABELS[s.sample_type as SampleType] ?? s.sample_type}
+                        {sampleTypes.labelOf(s.sample_type)}
                       </span>
                     </Link>
                   </li>

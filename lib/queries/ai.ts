@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { FillOutput, SuggestOutput } from "@/lib/ai/schemas";
+import type { CheckOutput, FillOutput, SuggestOutput } from "@/lib/ai/schemas";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
 
@@ -110,5 +110,33 @@ export function usePendingFill(entryId: string) {
       if (error) throw error;
       return data;
     },
+  });
+}
+
+/** Última revisión con IA de una entrada contra su protocolo. */
+export function useEntryReview(entryId: string) {
+  return useQuery({
+    queryKey: ["ai_suggestions", "check", entryId],
+    queryFn: async () => {
+      const { data, error } = await createClient()
+        .from("ai_suggestions")
+        .select("output, created_at")
+        .eq("entry_id", entryId)
+        .eq("kind", "campos_faltantes")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? { ...(data.output as unknown as CheckOutput), at: data.created_at } : null;
+    },
+  });
+}
+
+export function useCheckEntry(entryId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => postJson<CheckOutput>("/api/ai/check-entry", { entry_id: entryId }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["ai_suggestions", "check", entryId] }),
   });
 }

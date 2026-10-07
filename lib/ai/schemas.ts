@@ -175,3 +175,42 @@ export const organizeResponseSchema = z.object({
     }),
   ),
 });
+
+/** Revisión de una entrada contra su protocolo (§7.3, parte con IA). */
+export const checkResponseJsonSchema: JsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["missing", "deviations", "summary"],
+  properties: {
+    missing: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["what", "reason"],
+        properties: { what: { type: "string" }, reason: { type: "string" } },
+      },
+    },
+    deviations: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["what", "expected", "actual"],
+        properties: {
+          what: { type: "string" },
+          expected: { type: "string" },
+          actual: { type: "string" },
+        },
+      },
+    },
+    summary: { type: "string" },
+  },
+};
+
+export const checkResponseSchema = z.object({
+  missing: z.array(z.object({ what: z.string(), reason: z.string() })),
+  deviations: z.array(z.object({ what: z.string(), expected: z.string(), actual: z.string() })),
+  summary: z.string(),
+});
+export type CheckOutput = z.infer<typeof checkResponseSchema>;

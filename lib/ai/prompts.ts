@@ -52,3 +52,32 @@ decides cómo organizarlos.
 - reasoning: una línea en español que cite la evidencia (horas, códigos, lo dicho), p. ej.
   "Las 3 fotos y el audio se tomaron entre 10:05 y 10:20 y mencionan el bloque B-014-A".
 - No inventes: si un adjunto no tiene contenido útil, agrúpalo por hora y baja la confianza.`;
+
+export const PROTOCOL_INSTRUCTIONS = `Conviertes protocolos de laboratorio (fotos de páginas, PDF o
+texto) en una plantilla de bitácora. Responde en español.
+- Primero transcribe el protocolo completo en protocol_text: título, reactivos con
+  concentraciones, y los pasos numerados con tiempos y temperaturas, tal como aparecen.
+- Los campos (fields) son lo que el usuario debe REGISTRAR cada vez que hace el protocolo: lo que
+  cambia entre corridas (muestras usadas y producidas, lotes de reactivos, tiempos y
+  temperaturas reales, volúmenes, equipo, calidad del resultado, problemas).
+- Lo que el protocolo fija va como valor esperado del campo (expected_number, expected_text,
+  expected_seconds) para que la app detecte desviaciones. No inventes valores que no estén.
+- Usa type "steps" para la secuencia de pasos con su duración planificada en segundos.
+- Usa type "reagent" para anticuerpos, fijadores, kits, enzimas (lote y dilución se registran).
+- Usa type "sample_ref" para lo que se rastrea (animal, tejido, muestra de RNA, placa…), con el
+  tipo de muestra más cercano de la lista; si ninguno encaja usa "otro".
+- No incluyas campos para objetivo, observaciones, resultados, siguiente paso ni ubicación de
+  datos: toda entrada ya los tiene.
+- Entre 4 y 15 campos, con nombres cortos y la unidad del protocolo (µL, °C, rpm, ×g, min…).
+- required = true solo en lo indispensable para que el registro sirva (la muestra principal y
+  uno o dos datos críticos); todo lo demás va en false.
+- notes: avisa si algo no se leyó bien o qué supusiste, en una o dos líneas.`;
+
+export const CHECK_INSTRUCTIONS = `Revisas una entrada de bitácora de laboratorio contra su protocolo
+estándar. Responde en español, breve y concreto.
+- missing: lo que el protocolo indica registrar o hacer y que la entrada no menciona (p. ej.
+  "no anotaste el lote del anticuerpo", "falta la hora de inicio de la incubación").
+- deviations: diferencias entre lo registrado y el protocolo (tiempos, temperaturas,
+  concentraciones, orden de pasos), con lo esperado y lo registrado.
+- No repitas lo que ya está bien. No inventes requisitos que no estén en el protocolo.
+- summary: una línea con la conclusión ("Completa y sin desviaciones" o lo más importante).`;

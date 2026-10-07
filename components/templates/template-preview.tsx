@@ -2,10 +2,19 @@
 
 import Link from "next/link";
 import { use, useState } from "react";
-import { ChevronLeft, CircleAlert, CircleCheck, RotateCcw } from "lucide-react";
+import {
+  Archive,
+  ChevronLeft,
+  CircleAlert,
+  CircleCheck,
+  Copy,
+  Pencil,
+  RotateCcw,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { DynamicForm } from "@/components/entry/dynamic-form";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { useTemplate, type TemplateWithFields } from "@/lib/queries/templates";
+import { useArchiveTemplate, useTemplate, type TemplateWithFields } from "@/lib/queries/templates";
 import { fieldsToJsonSchema } from "@/lib/templates/json-schema";
 import {
   initialValues,
@@ -70,6 +79,7 @@ function PreviewForm({ template }: { template: TemplateWithFields }) {
     <div className="flex flex-col gap-6">
       <div>
         <BackLink />
+        <TemplateActions template={template} />
         <div className="mt-2 flex items-start gap-3">
           <TemplateIcon icon={template.icon} color={template.color} />
           <div>
@@ -148,6 +158,43 @@ function PreviewForm({ template }: { template: TemplateWithFields }) {
           {JSON.stringify(fieldsToJsonSchema(template.fields), null, 2)}
         </pre>
       </details>
+    </div>
+  );
+}
+
+function TemplateActions({ template }: { template: TemplateWithFields }) {
+  const router = useRouter();
+  const archive = useArchiveTemplate();
+  return (
+    <div className="mt-1 grid grid-cols-3 gap-2">
+      <Link
+        href={`/plantillas/${template.id}/editar`}
+        className={cn(buttonVariants({ variant: "outline" }), "h-12 gap-1.5")}
+      >
+        <Pencil className="size-4" aria-hidden />
+        Editar
+      </Link>
+      <Link
+        href={`/plantillas/nueva?desde=${template.id}`}
+        className={cn(buttonVariants({ variant: "outline" }), "h-12 gap-1.5")}
+      >
+        <Copy className="size-4" aria-hidden />
+        Duplicar
+      </Link>
+      <Button
+        variant="outline"
+        className="h-12 gap-1.5"
+        disabled={archive.isPending}
+        onClick={() =>
+          archive.mutate(
+            { id: template.id, archived: !template.is_archived },
+            { onSuccess: () => router.push("/plantillas") },
+          )
+        }
+      >
+        <Archive className="size-4" aria-hidden />
+        {template.is_archived ? "Reactivar" : "Archivar"}
+      </Button>
     </div>
   );
 }

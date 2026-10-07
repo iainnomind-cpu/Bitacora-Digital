@@ -7,19 +7,16 @@ import { StatusBadge } from "@/components/entry/status-badge";
 import { buttonVariants, Button } from "@/components/ui/button";
 import { formatEntryDate } from "@/lib/datetime";
 import {
-  PARENT_TYPES,
   useSampleEntries,
   useSamples,
   useUpdateSample,
   type Sample,
   type SampleStatus,
 } from "@/lib/queries/samples";
-import { SAMPLE_TYPE_LABELS, SAMPLE_TYPES, type SampleType } from "@/lib/templates/fields";
+import { useSampleTypes } from "@/lib/queries/sample-types";
 import { cn } from "@/lib/utils";
 import { SampleForm } from "./sample-form";
 import { SampleStatusBadge } from "./sample-status-badge";
-
-const typeLabel = (t: string) => SAMPLE_TYPE_LABELS[t as SampleType] ?? t;
 
 export function SampleDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -35,6 +32,8 @@ export function SampleDetail({ params }: { params: Promise<{ id: string }> }) {
 }
 
 function Detail({ sample, all }: { sample: Sample; all: Sample[] }) {
+  const sampleTypes = useSampleTypes();
+  const typeLabel = sampleTypes.labelOf;
   const [editing, setEditing] = useState(false);
   const update = useUpdateSample(sample.id);
   const entries = useSampleEntries(sample.id);
@@ -50,9 +49,7 @@ function Detail({ sample, all }: { sample: Sample; all: Sample[] }) {
     chain.unshift(p);
   }
   const children = all.filter((s) => s.parent_id === sample.id);
-  const childTypes = SAMPLE_TYPES.filter((t) =>
-    PARENT_TYPES[t].includes(sample.sample_type as SampleType),
-  );
+  const childTypes = sampleTypes.childrenOf(sample.sample_type).map((t) => t.key);
   const metadata = Object.entries((sample.metadata ?? {}) as Record<string, unknown>);
 
   if (editing) {
@@ -62,7 +59,7 @@ function Detail({ sample, all }: { sample: Sample; all: Sample[] }) {
         <SampleForm
           initial={{
             code: sample.code,
-            sample_type: sample.sample_type as SampleType,
+            sample_type: sample.sample_type,
             parent_id: sample.parent_id,
             status: sample.status as SampleStatus,
             storage_location: sample.storage_location,
@@ -187,6 +184,7 @@ function Detail({ sample, all }: { sample: Sample; all: Sample[] }) {
 }
 
 function SampleLink({ sample }: { sample: Sample }) {
+  const typeLabel = useSampleTypes().labelOf;
   return (
     <Link
       href={`/muestras/${sample.id}`}

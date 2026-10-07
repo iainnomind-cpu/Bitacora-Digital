@@ -206,27 +206,3 @@ export async function syncEntrySamples(entryId: string, fields: FieldDef[], data
     if (error) throw error;
   }
 }
-
-// Tipos de muestra que pueden ser padre de cada tipo (animal → tejido → bloque → rejilla…).
-export const PARENT_TYPES: Record<SampleType, SampleType[]> = {
-  animal: [],
-  tejido: ["animal"],
-  bloque: ["tejido", "animal"],
-  navaja: [],
-  rejilla: ["bloque"],
-  laminilla: ["bloque", "tejido"],
-  muestra_microct: ["tejido", "animal"],
-  otro: ["animal", "tejido", "bloque"],
-};
-
-// Datos sugeridos por tipo (§4 samples.metadata); el usuario puede agregar otros.
-export const METADATA_KEYS: Record<SampleType, string[]> = {
-  animal: ["genotipo", "sexo", "fecha de nacimiento", "grupo de tratamiento"],
-  tejido: ["región", "hemisferio"],
-  bloque: ["resina", "orientación"],
-  navaja: ["lote de vidrio", "calidad del filo"],
-  rejilla: ["tipo de rejilla", "cortes"],
-  laminilla: ["tinción"],
-  muestra_microct: ["tinción de contraste"],
-  otro: [],
-};

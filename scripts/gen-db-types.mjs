@@ -28,6 +28,12 @@ const HIDDEN_DEFAULTS = new Set([
   "samples.metadata",
   "ai_suggestions.input_ref",
   "attachments.ai_tags",
+  "template_versions.protocol_sources",
+  "projects.vocabulary",
+  "profiles.vocabulary",
+  "sample_types.parent_keys",
+  "sample_types.metadata_keys",
+  "solution_recipes.components",
 ]);
 
 function tsType(prop) {

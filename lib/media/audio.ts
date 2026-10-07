@@ -31,6 +31,7 @@ const EXTENSIONS: Record<string, string> = {
   "image/webp": "webp",
   "image/heic": "heic",
   "image/heif": "heif",
+  "application/pdf": "pdf",
 };
 
 export function extensionFor(mime: string) {

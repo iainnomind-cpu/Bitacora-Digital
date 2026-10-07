@@ -4,12 +4,12 @@ import { useId, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSampleTypes } from "@/lib/queries/sample-types";
 import { useSampleCodes } from "@/lib/queries/samples";
 import {
   emptyReagent,
   emptyStep,
   REAGENT_PARTS,
-  SAMPLE_TYPE_LABELS,
   type Reagent,
   type Step,
 } from "@/lib/templates/fields";
@@ -29,7 +29,7 @@ export function SampleRefField({
 }: FieldProps<"sample_ref">) {
   const listId = useId();
   const { data: codes = [] } = useSampleCodes(field.sample_type);
-  const typeLabel = SAMPLE_TYPE_LABELS[field.sample_type].toLowerCase();
+  const typeLabel = useSampleTypes().labelOf(field.sample_type).toLowerCase();
   const [draft, setDraft] = useState("");
 
   const datalist = (

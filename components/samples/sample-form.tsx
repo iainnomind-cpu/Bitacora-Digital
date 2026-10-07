@@ -7,24 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  METADATA_KEYS,
-  PARENT_TYPES,
   SAMPLE_STATUS_LABELS,
   useSamples,
   type Sample,
   type SampleInput,
   type SampleStatus,
 } from "@/lib/queries/samples";
-import { SAMPLE_TYPE_LABELS, SAMPLE_TYPES, type SampleType } from "@/lib/templates/fields";
+import { useSampleTypes } from "@/lib/queries/sample-types";
+
+type SampleType = string;
 
 type Row = { key: string; value: string };
 
-function toRows(type: SampleType, metadata: Record<string, string>): Row[] {
+function toRows(suggested: string[], metadata: Record<string, string>): Row[] {
   const rows: Row[] = Object.entries(metadata).map(([key, value]) => ({
     key,
     value: String(value),
   }));
-  for (const key of METADATA_KEYS[type]) {
+  for (const key of suggested) {
     if (!rows.some((r) => r.key === key)) rows.push({ key, value: "" });
   }
   return rows;
@@ -48,6 +48,7 @@ export function SampleForm({
 }) {
   const formId = useId();
   const samples = useSamples();
+  const sampleTypes = useSampleTypes();
   const [code, setCode] = useState(initial.code ?? "");
   const [type, setType] = useState<SampleType>(initial.sample_type);
   const [status, setStatus] = useState<SampleStatus>(initial.status ?? "activa");
@@ -56,7 +57,7 @@ export function SampleForm({
     () => samples.data?.find((s) => s.id === initial.parent_id)?.code ?? "",
   );
   const [rows, setRows] = useState<Row[]>(() =>
-    toRows(initial.sample_type, initial.metadata ?? {}),
+    toRows(sampleTypes.metadataOf(initial.sample_type), initial.metadata ?? {}),
   );
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -67,7 +68,7 @@ export function SampleForm({
     setParentCode(samples.data.find((s) => s.id === initial.parent_id)?.code ?? "");
   }
 
-  const parentTypes = PARENT_TYPES[type];
+  const parentTypes = sampleTypes.parentsOf(type);
   const parentOptions = (samples.data ?? []).filter(
     (s) => parentTypes.includes(s.sample_type as SampleType) && s.code !== code.trim(),
   );
@@ -76,7 +77,7 @@ export function SampleForm({
     setType(t);
     setRows((prev) =>
       toRows(
-        t,
+        sampleTypes.metadataOf(t),
         Object.fromEntries(prev.filter((r) => r.value.trim()).map((r) => [r.key, r.value])),
       ),
     );
@@ -125,7 +126,7 @@ export function SampleForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-base font-medium">Tipo</legend>
         <div className="flex flex-wrap gap-2">
-          {SAMPLE_TYPES.map((t) => (
+          {sampleTypes.active.map(({ key: t }) => (
             <button
               key={t}
               type="button"
@@ -133,7 +134,7 @@ export function SampleForm({
               className={chipClass(type === t)}
               aria-pressed={type === t}
             >
-              {SAMPLE_TYPE_LABELS[t]}
+              {sampleTypes.labelOf(t)}
             </button>
           ))}
         </div>
@@ -142,7 +143,7 @@ export function SampleForm({
       {parentTypes.length > 0 && (
         <div className="flex flex-col gap-2">
           <Label htmlFor={`${formId}-parent`} className="text-base">
-            Viene de ({parentTypes.map((t) => SAMPLE_TYPE_LABELS[t].toLowerCase()).join(" o ")})
+            Viene de ({parentTypes.map((t) => sampleTypes.labelOf(t).toLowerCase()).join(" o ")})
           </Label>
           <Input
             id={`${formId}-parent`}
@@ -156,7 +157,7 @@ export function SampleForm({
           <datalist id={`${formId}-parents`}>
             {parentOptions.map((s) => (
               <option key={s.id} value={s.code}>
-                {SAMPLE_TYPE_LABELS[s.sample_type as SampleType]}
+                {sampleTypes.labelOf(s.sample_type)}
               </option>
             ))}
           </datalist>

@@ -71,6 +71,25 @@ export type NewCapture =
   | { kind: "texto"; text: string; capturedAt?: Date };
 
 /**
+ * Sube un archivo al bucket privado dentro de la carpeta del usuario: {user_id}/{folder}/{uuid}.{ext}.
+ * Las políticas de Storage solo dejan escribir en la carpeta propia.
+ */
+export async function uploadToStorage(blob: Blob, folder: string) {
+  const supabase = createClient();
+  const { data: session } = await supabase.auth.getSession();
+  const userId = session.session?.user.id;
+  if (!userId) throw new Error("La sesión expiró. Vuelve a entrar.");
+
+  const mime = baseMimeType(blob.type || "application/octet-stream");
+  const path = `${userId}/${folder}/${crypto.randomUUID()}.${extensionFor(mime)}`;
+  const upload = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: mime, upsert: false });
+  if (upload.error) throw upload.error;
+  return { path, mime };
+}
+
+/**
  * Sube un archivo directo a Storage (sin pasar por Vercel, §7.1) con la sesión del usuario —las
  * políticas solo dejan escribir en su carpeta— y registra el adjunto.
  * Ruta: {user_id}/{yyyy}/{mm}/{entry_id|inbox}/{uuid}.{ext}
@@ -94,24 +113,13 @@ async function createAttachment(entryId: string | null, capture: NewCapture) {
     return data;
   }
 
-  const { data: session } = await supabase.auth.getSession();
-  const userId = session.session?.user.id;
-  if (!userId) throw new Error("La sesión expiró. Vuelve a entrar.");
-
-  const mime = baseMimeType(capture.blob.type || "application/octet-stream");
   const now = new Date();
-  const path = [
-    userId,
+  const folder = [
     now.getUTCFullYear(),
     String(now.getUTCMonth() + 1).padStart(2, "0"),
     entryId ?? "inbox",
-    `${crypto.randomUUID()}.${extensionFor(mime)}`,
   ].join("/");
-
-  const upload = await supabase.storage
-    .from(BUCKET)
-    .upload(path, capture.blob, { contentType: mime, upsert: false });
-  if (upload.error) throw upload.error;
+  const { path, mime } = await uploadToStorage(capture.blob, folder);
 
   const { data, error } = await supabase
     .from("attachments")

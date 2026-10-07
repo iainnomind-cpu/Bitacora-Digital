@@ -9,6 +9,8 @@ import { z } from "zod";
 //   reagent → Reagent, o Reagent[] si multiple
 //   steps → Step[]
 
+// Tipos de muestra iniciales. El usuario puede crear los suyos (tabla sample_types), así que
+// en los campos sample_ref el tipo es cualquier clave válida.
 export const SAMPLE_TYPES = [
   "animal",
   "tejido",
@@ -19,9 +21,9 @@ export const SAMPLE_TYPES = [
   "muestra_microct",
   "otro",
 ] as const;
-export type SampleType = (typeof SAMPLE_TYPES)[number];
+export type SampleType = string;
 
-export const SAMPLE_TYPE_LABELS: Record<SampleType, string> = {
+export const SAMPLE_TYPE_LABELS: Record<string, string> = {
   animal: "Animal",
   tejido: "Tejido",
   bloque: "Bloque",
@@ -31,6 +33,11 @@ export const SAMPLE_TYPE_LABELS: Record<SampleType, string> = {
   muestra_microct: "Muestra de microCT",
   otro: "Otro",
 };
+
+/** Etiqueta de un tipo de muestra cuando no se tiene la tabla a mano ("linea_celular" → "Linea celular"). */
+export function sampleTypeLabel(key: string) {
+  return SAMPLE_TYPE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ");
+}
 
 export const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -97,7 +104,7 @@ export const fieldDefSchema = z.discriminatedUnion("type", [
   z.object({
     ...base,
     type: z.literal("sample_ref"),
-    sample_type: z.enum(SAMPLE_TYPES),
+    sample_type: z.string().regex(/^[a-z][a-z0-9_]*$/),
     multiple: z.boolean().default(false),
     role: z.enum(["usada", "producida"]).default("usada"),
   }),

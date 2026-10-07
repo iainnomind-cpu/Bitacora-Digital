@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCreateSample, useSamples } from "@/lib/queries/samples";
 import { safeNext } from "@/lib/safe-next";
-import { SAMPLE_TYPES, type SampleType } from "@/lib/templates/fields";
+import { useSampleTypes } from "@/lib/queries/sample-types";
 import { SampleForm } from "./sample-form";
 
 /**
@@ -17,12 +17,14 @@ export function NewSample() {
   const create = useCreateSample();
 
   const tipo = params.get("tipo");
-  const type: SampleType = SAMPLE_TYPES.includes(tipo as SampleType)
-    ? (tipo as SampleType)
-    : "animal";
+  const sampleTypes = useSampleTypes();
   const back = params.get("volver");
 
-  if (samples.isPending) return <div className="h-64 animate-pulse rounded-xl bg-muted" />;
+  if (samples.isPending || sampleTypes.isPending) {
+    return <div className="h-64 animate-pulse rounded-xl bg-muted" />;
+  }
+  const type =
+    sampleTypes.active.find((t) => t.key === tipo)?.key ?? sampleTypes.active[0]?.key ?? "otro";
   const parent = samples.data?.find((s) => s.code === params.get("padre"));
 
   return (

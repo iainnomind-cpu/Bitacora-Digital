@@ -7,7 +7,7 @@ import { chipClass } from "@/components/entry/fields/inputs";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSamples, type Sample, type SampleStatus } from "@/lib/queries/samples";
-import { SAMPLE_TYPE_LABELS, SAMPLE_TYPES, type SampleType } from "@/lib/templates/fields";
+import { useSampleTypes } from "@/lib/queries/sample-types";
 import { cn } from "@/lib/utils";
 import { SampleStatusBadge } from "./sample-status-badge";
 
@@ -15,7 +15,8 @@ import { SampleStatusBadge } from "./sample-status-badge";
 export function SamplesView() {
   const samples = useSamples();
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<SampleType | null>(null);
+  const sampleTypes = useSampleTypes();
+  const [type, setType] = useState<string | null>(null);
   const [onlyActive, setOnlyActive] = useState(true);
 
   const q = query.trim().toLowerCase();
@@ -42,6 +43,14 @@ export function SamplesView() {
         Nueva muestra
       </Link>
 
+      <Link
+        href="/muestras/tipos"
+        className="-mt-2 flex min-h-12 items-center gap-1 self-end text-sm text-muted-foreground hover:text-foreground"
+      >
+        Tipos de muestra
+        <ChevronRight className="size-4" aria-hidden />
+      </Link>
+
       <div className="relative">
         <Search
           className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground"
@@ -61,16 +70,18 @@ export function SamplesView() {
         <button type="button" onClick={() => setType(null)} className={chipClass(type == null)}>
           Todas
         </button>
-        {SAMPLE_TYPES.filter((t) => counts.has(t)).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setType(type === t ? null : t)}
-            className={cn(chipClass(type === t), "shrink-0")}
-          >
-            {SAMPLE_TYPE_LABELS[t]} <span className="opacity-70">{counts.get(t)}</span>
-          </button>
-        ))}
+        {sampleTypes.all
+          .filter((t) => counts.has(t.key))
+          .map(({ key: t }) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setType(type === t ? null : t)}
+              className={cn(chipClass(type === t), "shrink-0")}
+            >
+              {sampleTypes.labelOf(t)} <span className="opacity-70">{counts.get(t)}</span>
+            </button>
+          ))}
       </div>
       <label className="flex min-h-12 items-center gap-2 text-sm">
         <input
@@ -101,6 +112,7 @@ export function SamplesView() {
         <ul className="flex flex-col gap-2">
           {visible.map((s) => (
             <SampleRow
+              typeLabel={sampleTypes.labelOf(s.sample_type)}
               key={s.id}
               sample={s}
               parentCode={s.parent_id ? codeById.get(s.parent_id) : undefined}
@@ -112,7 +124,15 @@ export function SamplesView() {
   );
 }
 
-function SampleRow({ sample, parentCode }: { sample: Sample; parentCode?: string }) {
+function SampleRow({
+  sample,
+  parentCode,
+  typeLabel,
+}: {
+  sample: Sample;
+  parentCode?: string;
+  typeLabel: string;
+}) {
   return (
     <li>
       <Link
@@ -122,7 +142,7 @@ function SampleRow({ sample, parentCode }: { sample: Sample; parentCode?: string
         <div className="min-w-0 flex-1">
           <p className="truncate font-mono font-medium">{sample.code}</p>
           <p className="truncate text-sm text-muted-foreground">
-            {SAMPLE_TYPE_LABELS[sample.sample_type as SampleType] ?? sample.sample_type}
+            {typeLabel}
             {parentCode && ` · de ${parentCode}`}
             {sample.storage_location && ` · ${sample.storage_location}`}
           </p>

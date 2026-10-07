@@ -27,6 +27,7 @@ import { validateEntryData, type EntryData } from "@/lib/templates/values";
 import { fillResponseSchema, type FillOutput } from "@/lib/ai/schemas";
 import { AiFillReview } from "./ai-fill-review";
 import { DynamicForm } from "./dynamic-form";
+import { EntryFlags } from "./entry-flags";
 import { EntryHeader } from "./entry-header";
 import { EntryReadView } from "./entry-read-view";
 import { DateTimeInput, fieldInputClass } from "./fields/inputs";
@@ -348,6 +349,14 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
           <CommonField key={k} k={k} value={draft[k]} onChange={(v) => update({ [k]: v })} />
         ))}
       </section>
+
+      <EntryFlags
+        entryId={entry.id}
+        fields={template.fields}
+        data={draft.data}
+        hasProtocol={Boolean(template.protocolNotes?.trim())}
+        beforeCheck={autosave.flush}
+      />
 
       <div className="flex flex-col gap-3 border-t pt-6">
         {triedToClose && errorCount > 0 && (

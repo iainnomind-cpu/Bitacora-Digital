@@ -7,7 +7,6 @@ import { Check, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   createSample,
-  PARENT_TYPES,
   sampleKeys,
   sampleRefsOf,
   syncEntrySamples,
@@ -15,7 +14,8 @@ import {
   useSamples,
   type Sample,
 } from "@/lib/queries/samples";
-import { SAMPLE_TYPE_LABELS, type FieldDef, type SampleType } from "@/lib/templates/fields";
+import { useSampleTypes } from "@/lib/queries/sample-types";
+import type { FieldDef } from "@/lib/templates/fields";
 import type { EntryData } from "@/lib/templates/values";
 
 type Ref = ReturnType<typeof sampleRefsOf>[number];
@@ -36,6 +36,7 @@ export function EntrySamplesPanel({
 }) {
   const queryClient = useQueryClient();
   const samples = useSamples();
+  const sampleTypes = useSampleTypes();
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +64,7 @@ export function EntrySamplesPanel({
             ? unique.find(
                 (u) =>
                   u.role === "usada" &&
-                  PARENT_TYPES[r.sampleType].includes(u.sampleType) &&
+                  sampleTypes.parentsOf(r.sampleType).includes(u.sampleType) &&
                   known.has(u.code),
               )
             : undefined;
@@ -120,7 +121,7 @@ export function EntrySamplesPanel({
                   <span className="font-mono">{r.code}</span>
                 )}
                 <span className="text-muted-foreground">
-                  {SAMPLE_TYPE_LABELS[r.sampleType as SampleType].toLowerCase()} {r.role}
+                  {sampleTypes.labelOf(r.sampleType).toLowerCase()} {r.role}
                   {!s && " · sin registrar"}
                 </span>
                 {!s && (

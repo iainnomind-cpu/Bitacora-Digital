@@ -19,6 +19,7 @@ import {
 import type { TemplateWithFields } from "@/lib/queries/templates";
 import { formatFieldValue } from "@/lib/templates/format";
 import type { EntryData } from "@/lib/templates/values";
+import { EntryFlags } from "./entry-flags";
 import { EntryHeader } from "./entry-header";
 import { VoidEntry } from "./void-entry";
 
@@ -67,6 +68,13 @@ export function EntryReadView({ entry, template }: { entry: Entry; template: Tem
           />
         ))}
       </dl>
+
+      <EntryFlags
+        entryId={entry.id}
+        fields={template.fields}
+        data={data}
+        hasProtocol={Boolean(template.protocolNotes?.trim())}
+      />
 
       <EntrySamplesList entryId={entry.id} />
 

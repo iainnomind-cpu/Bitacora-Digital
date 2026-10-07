@@ -203,6 +203,7 @@ export type Database = {
           search_vector: string | null;
           created_at: string;
           updated_at: string;
+          project_id: string | null;
         };
         Insert: {
           id?: string;
@@ -227,6 +228,7 @@ export type Database = {
           search_vector?: string | null;
           created_at?: string;
           updated_at?: string;
+          project_id?: string | null;
         };
         Update: {
           id?: string;
@@ -251,8 +253,17 @@ export type Database = {
           search_vector?: string | null;
           created_at?: string;
           updated_at?: string;
+          project_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "entries_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       entry_addenda: {
         Row: {
@@ -372,6 +383,9 @@ export type Database = {
           auto_close_hours: number;
           created_at: string;
           updated_at: string;
+          active_project_id: string | null;
+          ai_context: string | null;
+          vocabulary: string[];
         };
         Insert: {
           user_id?: string;
@@ -381,6 +395,9 @@ export type Database = {
           auto_close_hours?: number;
           created_at?: string;
           updated_at?: string;
+          active_project_id?: string | null;
+          ai_context?: string | null;
+          vocabulary?: string[];
         };
         Update: {
           user_id?: string;
@@ -388,6 +405,56 @@ export type Database = {
           timezone?: string;
           lab_name?: string | null;
           auto_close_hours?: number;
+          created_at?: string;
+          updated_at?: string;
+          active_project_id?: string | null;
+          ai_context?: string | null;
+          vocabulary?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_project_id_fkey";
+            columns: ["active_project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      projects: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          ai_context: string | null;
+          vocabulary: string[];
+          color: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          name: string;
+          description?: string | null;
+          ai_context?: string | null;
+          vocabulary?: string[];
+          color?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          ai_context?: string | null;
+          vocabulary?: string[];
+          color?: string | null;
+          status?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -426,6 +493,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      reagent_library: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          formula: string | null;
+          molecular_weight: number | null;
+          cas: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          name: string;
+          formula?: string | null;
+          molecular_weight?: number | null;
+          cas?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          formula?: string | null;
+          molecular_weight?: number | null;
+          cas?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       reminders: {
         Row: {
           id: string;
@@ -439,6 +542,7 @@ export type Database = {
           last_sent_at: string | null;
           created_at: string;
           updated_at: string;
+          entry_id: string | null;
         };
         Insert: {
           id?: string;
@@ -452,6 +556,7 @@ export type Database = {
           last_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          entry_id?: string | null;
         };
         Update: {
           id?: string;
@@ -463,6 +568,51 @@ export type Database = {
           fire_at?: string | null;
           enabled?: boolean;
           last_sent_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          entry_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reminders_entry_id_fkey";
+            columns: ["entry_id"];
+            isOneToOne: false;
+            referencedRelation: "entries";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sample_types: {
+        Row: {
+          id: string;
+          user_id: string;
+          key: string;
+          label: string;
+          parent_keys: string[];
+          metadata_keys: string[];
+          is_archived: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          key: string;
+          label: string;
+          parent_keys?: string[];
+          metadata_keys?: string[];
+          is_archived?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          key?: string;
+          label?: string;
+          parent_keys?: string[];
+          metadata_keys?: string[];
+          is_archived?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -515,6 +665,42 @@ export type Database = {
           },
         ];
       };
+      solution_recipes: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          final_volume_ml: number | null;
+          components: Json;
+          ph: number | null;
+          instructions: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          name: string;
+          final_volume_ml?: number | null;
+          components?: Json;
+          ph?: number | null;
+          instructions?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          final_volume_ml?: number | null;
+          components?: Json;
+          ph?: number | null;
+          instructions?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       template_versions: {
         Row: {
           id: string;
@@ -524,6 +710,7 @@ export type Database = {
           fields: Json;
           protocol_notes: string | null;
           created_at: string;
+          protocol_sources: string[];
         };
         Insert: {
           id?: string;
@@ -533,6 +720,7 @@ export type Database = {
           fields?: Json;
           protocol_notes?: string | null;
           created_at?: string;
+          protocol_sources?: string[];
         };
         Update: {
           id?: string;
@@ -542,6 +730,7 @@ export type Database = {
           fields?: Json;
           protocol_notes?: string | null;
           created_at?: string;
+          protocol_sources?: string[];
         };
         Relationships: [
           {
