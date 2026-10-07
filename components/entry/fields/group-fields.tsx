@@ -1,9 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Plus, Trash2, X } from "lucide-react";
+import Link from "next/link";
+import { Beaker, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { parseDilution } from "@/lib/chem/solutions";
 import { useSampleTypes } from "@/lib/queries/sample-types";
 import { useSampleCodes } from "@/lib/queries/samples";
 import {
@@ -152,6 +154,15 @@ function ReagentInputs({
           />
         </label>
       ))}
+      {value.concentracion && parseDilution(value.concentracion) && (
+        <Link
+          href={`/calculadora?herramienta=factor&dilucion=${encodeURIComponent(value.concentracion)}`}
+          className="flex min-h-12 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground sm:col-span-2"
+        >
+          <Beaker className="size-4" aria-hidden />
+          Calcular volúmenes para {value.concentracion}
+        </Link>
+      )}
     </div>
   );
 }

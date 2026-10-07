@@ -17,7 +17,8 @@ const COLUMNS =
   "id, title, status, entry_date, started_at, template_id, objective, observations, results, next_steps, data_location, data";
 const LIMIT = 50;
 
-export const isEmptySearch = (f: SearchFilters) => !f.q.trim() && !f.from && !f.to && !f.templateId && !f.projectId;
+export const isEmptySearch = (f: SearchFilters) =>
+  !f.q.trim() && !f.from && !f.to && !f.templateId && !f.projectId;
 
 // Escapa comodines de LIKE para buscar el código literal.
 const likeLiteral = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`);

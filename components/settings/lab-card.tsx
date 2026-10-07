@@ -27,7 +27,8 @@ function LabForm({ profile }: { profile: ReturnType<typeof useProfile>["data"] }
   const [vocabulary, setVocabulary] = useState((profile?.vocabulary ?? []).join(", "));
   const [timezone, setTimezone] = useState(profile?.timezone ?? "America/Mexico_City");
   const [saved, setSaved] = useState(false);
-  const zones = mounted && "supportedValuesOf" in Intl ? Intl.supportedValuesOf("timeZone") : [timezone];
+  const zones =
+    mounted && "supportedValuesOf" in Intl ? Intl.supportedValuesOf("timeZone") : [timezone];
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
@@ -84,7 +85,11 @@ function LabForm({ profile }: { profile: ReturnType<typeof useProfile>["data"] }
         disabled={update.isPending}
         onClick={() =>
           update.mutate(
-            { ai_context: context.trim() || null, vocabulary: parseVocabulary(vocabulary), timezone },
+            {
+              ai_context: context.trim() || null,
+              vocabulary: parseVocabulary(vocabulary),
+              timezone,
+            },
             { onSuccess: () => setSaved(true) },
           )
         }

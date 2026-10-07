@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Beaker, Plus } from "lucide-react";
 import { CaptureBar } from "@/components/attachments/capture-bar";
 import { PageHeader } from "@/components/layout/page-header";
 import { ProjectSwitcher } from "@/components/projects/project-switcher";
@@ -36,6 +36,13 @@ export default function HoyPage() {
         </h2>
         <CaptureBar entryId={null} />
         <InboxLink />
+        <Link
+          href="/calculadora"
+          className="flex min-h-12 items-center gap-2 rounded-xl px-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <Beaker className="size-4" aria-hidden />
+          <span className="flex-1">Calculadora de soluciones</span>
+        </Link>
       </section>
 
       <TodayEntries />

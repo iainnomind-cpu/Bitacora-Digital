@@ -161,6 +161,10 @@ export const stepSchema = z.object({
   planned_seconds: z.number().int().nonnegative().nullable(),
   actual_seconds: z.number().int().nonnegative().nullable(),
   note: z.string().nullable(),
+  // Modo guiado: cuándo empezó y terminó el paso, y el temporizador programado (reminders.id).
+  started_at: z.string().nullable().optional(),
+  finished_at: z.string().nullable().optional(),
+  timer_id: z.string().nullable().optional(),
 });
 export type Step = z.infer<typeof stepSchema>;
 

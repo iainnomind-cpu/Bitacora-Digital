@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ChevronRight, LayoutTemplate } from "lucide-react";
+import { Beaker, ChevronRight, FlaskConical, LayoutTemplate } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { AccountCard } from "@/components/settings/account-card";
 import { InstallCard } from "@/components/settings/install-card";
@@ -36,14 +36,32 @@ export default function AjustesPage() {
           <h2 id="bitacora" className="mb-3 font-heading text-lg font-semibold">
             Bitácora
           </h2>
-          <Link
-            href="/plantillas"
-            className="flex min-h-16 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
-          >
-            <LayoutTemplate className="size-5 text-muted-foreground" aria-hidden />
-            <span className="flex-1 font-medium">Plantillas</span>
-            <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
-          </Link>
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/plantillas"
+              className="flex min-h-16 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
+            >
+              <LayoutTemplate className="size-5 text-muted-foreground" aria-hidden />
+              <span className="flex-1 font-medium">Plantillas</span>
+              <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
+            </Link>
+            <Link
+              href="/muestras/tipos"
+              className="flex min-h-16 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
+            >
+              <FlaskConical className="size-5 text-muted-foreground" aria-hidden />
+              <span className="flex-1 font-medium">Tipos de muestra</span>
+              <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
+            </Link>
+            <Link
+              href="/calculadora"
+              className="flex min-h-16 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
+            >
+              <Beaker className="size-5 text-muted-foreground" aria-hidden />
+              <span className="flex-1 font-medium">Calculadora de soluciones</span>
+              <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
+            </Link>
+          </div>
         </section>
         <section aria-labelledby="notificaciones">
           <h2 id="notificaciones" className="mb-3 font-heading text-lg font-semibold">

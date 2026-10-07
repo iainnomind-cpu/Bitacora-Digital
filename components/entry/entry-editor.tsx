@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { use, useCallback, useState } from "react";
-import { AlertCircle, Check, CloudUpload, Loader2, Lock, Sparkles } from "lucide-react";
+import { AlertCircle, Check, CloudUpload, Loader2, Lock, PlayCircle, Sparkles } from "lucide-react";
 import { EntryAttachments } from "@/components/attachments/entry-attachments";
 import { EntrySamplesPanel } from "@/components/samples/entry-samples-panel";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,13 @@ import { useTimeZone } from "@/lib/queries/profile";
 import { useProjects } from "@/lib/queries/projects";
 import { syncEntrySamples } from "@/lib/queries/samples";
 import { useTemplateVersion, type TemplateWithFields } from "@/lib/queries/templates";
+import type { Step } from "@/lib/templates/fields";
 import { validateEntryData, type EntryData } from "@/lib/templates/values";
 import { fillResponseSchema, type FillOutput } from "@/lib/ai/schemas";
 import { AiFillReview } from "./ai-fill-review";
 import { DynamicForm } from "./dynamic-form";
 import { EntryFlags } from "./entry-flags";
+import { GuidedSteps } from "./guided-steps";
 import { EntryHeader } from "./entry-header";
 import { EntryReadView } from "./entry-read-view";
 import { DateTimeInput, fieldInputClass } from "./fields/inputs";
@@ -85,6 +87,8 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
   const [draft, setDraft] = useState(() => toDraft(entry));
   const [triedToClose, setTriedToClose] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [guided, setGuided] = useState<string | null>(null);
+  const guidedField = template.fields.find((f) => f.key === guided);
   const setStatus = useSetEntryStatus(entry.id);
 
   const autosave = useAutosave(
@@ -217,6 +221,15 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
 
   return (
     <div className="flex flex-col gap-6">
+      {guidedField && (
+        <GuidedSteps
+          entryId={entry.id}
+          title={draft.title || template.name}
+          steps={(draft.data[guidedField.key] as Step[] | null) ?? []}
+          onChange={(steps) => update({ data: { ...draft.data, [guidedField.key]: steps } })}
+          onClose={() => setGuided(null)}
+        />
+      )}
       <EntryHeader
         entry={entry}
         template={template}
@@ -293,6 +306,14 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
             onChange={(data) => update({ data })}
             errors={errors}
           />
+          {template.fields
+            .filter((f) => f.type === "steps")
+            .map((f) => (
+              <Button key={f.key} className="h-14 text-base" onClick={() => setGuided(f.key)}>
+                <PlayCircle className="size-5" aria-hidden />
+                Modo guiado: {f.label}
+              </Button>
+            ))}
         </section>
       )}
 

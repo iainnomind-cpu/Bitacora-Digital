@@ -50,7 +50,7 @@ async function handle(request: NextRequest) {
     const payload: PushPayload = {
       title: r.title,
       body: r.body ?? "",
-      url: URLS[r.kind] ?? "/hoy",
+      url: r.entry_id ? `/entrada/${r.entry_id}` : (URLS[r.kind] ?? "/hoy"),
       tag: r.kind,
     };
 
@@ -69,7 +69,11 @@ async function handle(request: NextRequest) {
     }
 
     // Se marca aunque no haya dispositivos: el recordatorio "ya tocó" en esta ventana.
-    await db.from("reminders").update({ last_sent_at: now.toISOString() }).eq("id", r.id);
+    // Los temporizadores y recordatorios únicos se desactivan al dispararse.
+    await db
+      .from("reminders")
+      .update({ last_sent_at: now.toISOString(), ...(r.fire_at ? { enabled: false } : {}) })
+      .eq("id", r.id);
     if (!userSubs.length) continue;
     const result = await sendPush(userSubs, payload);
     sent += result.sent.length;

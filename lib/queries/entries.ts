@@ -28,7 +28,8 @@ export type EntryDraft = Pick<
 export const entryKeys = {
   all: ["entries"] as const,
   detail: (id: string) => ["entries", "detail", id] as const,
-  day: (date: string, projectId: string | null = null) => ["entries", "day", date, projectId] as const,
+  day: (date: string, projectId: string | null = null) =>
+    ["entries", "day", date, projectId] as const,
   pendingDrafts: (before: string, projectId: string | null = null) =>
     ["entries", "pending", before, projectId] as const,
   templateUsage: ["entries", "template-usage"] as const,
@@ -37,7 +38,8 @@ export const entryKeys = {
   addenda: (id: string) => ["entries", "addenda", id] as const,
 };
 
-const SUMMARY_COLUMNS = "id, title, status, entry_date, started_at, ended_at, template_id, project_id";
+const SUMMARY_COLUMNS =
+  "id, title, status, entry_date, started_at, ended_at, template_id, project_id";
 
 export function useEntry(id: string) {
   return useQuery({

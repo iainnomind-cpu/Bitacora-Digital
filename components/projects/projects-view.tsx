@@ -42,8 +42,8 @@ export function ProjectsView() {
           <FolderKanban className="size-10 text-muted-foreground" aria-hidden />
           <p className="font-medium">Aún no hay proyectos</p>
           <p className="max-w-xs text-sm text-muted-foreground">
-            Por ejemplo “Tesis 3xTg”, “Western de PSD-95” o “Cohorte de conducta 2”. Cada entrada nueva
-            se asigna al proyecto activo.
+            Por ejemplo “Tesis 3xTg”, “Western de PSD-95” o “Cohorte de conducta 2”. Cada entrada
+            nueva se asigna al proyecto activo.
           </p>
         </div>
       ) : (
@@ -54,21 +54,44 @@ export function ProjectsView() {
                 <ProjectForm project={p} onDone={() => setEditing(null)} />
               </li>
             ) : (
-              <li key={p.id} className={cn("flex items-center gap-2 rounded-xl border bg-card p-3", p.status === "archivado" && "opacity-60")}>
+              <li
+                key={p.id}
+                className={cn(
+                  "flex items-center gap-2 rounded-xl border bg-card p-3",
+                  p.status === "archivado" && "opacity-60",
+                )}
+              >
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-2 font-medium">
                     {p.name}
-                    {active.id === p.id && <CheckCircle2 className="size-4 text-emerald-600" aria-label="Activo" />}
-                    {p.status === "archivado" && <span className="text-xs text-muted-foreground">(archivado)</span>}
+                    {active.id === p.id && (
+                      <CheckCircle2 className="size-4 text-emerald-600" aria-label="Activo" />
+                    )}
+                    {p.status === "archivado" && (
+                      <span className="text-xs text-muted-foreground">(archivado)</span>
+                    )}
                   </p>
-                  {p.description && <p className="truncate text-sm text-muted-foreground">{p.description}</p>}
+                  {p.description && (
+                    <p className="truncate text-sm text-muted-foreground">{p.description}</p>
+                  )}
                 </div>
                 {active.id !== p.id && p.status === "activo" && (
-                  <Button variant="outline" className="h-12" disabled={setActive.isPending} onClick={() => setActive.mutate({ active_project_id: p.id })}>
+                  <Button
+                    variant="outline"
+                    className="h-12"
+                    disabled={setActive.isPending}
+                    onClick={() => setActive.mutate({ active_project_id: p.id })}
+                  >
                     Activar
                   </Button>
                 )}
-                <Button variant="ghost" size="icon" className="size-12" aria-label={`Editar ${p.name}`} onClick={() => setEditing(p)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-12"
+                  aria-label={`Editar ${p.name}`}
+                  onClick={() => setEditing(p)}
+                >
                   <Pencil className="size-4" aria-hidden />
                 </Button>
               </li>
@@ -120,11 +143,23 @@ function ProjectForm({ project, onDone }: { project?: Project; onDone: () => voi
     >
       <div className="flex flex-col gap-2">
         <Label htmlFor="proy-nombre">Nombre</Label>
-        <Input id="proy-nombre" value={name} onChange={(e) => setName(e.target.value)} className={fieldInputClass} autoFocus />
+        <Input
+          id="proy-nombre"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className={fieldInputClass}
+          autoFocus
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="proy-desc">Descripción</Label>
-        <Input id="proy-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Objetivo o pregunta del experimento" className={fieldInputClass} />
+        <Input
+          id="proy-desc"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Objetivo o pregunta del experimento"
+          className={fieldInputClass}
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="proy-contexto">Contexto para la IA</Label>
@@ -145,7 +180,9 @@ function ProjectForm({ project, onDone }: { project?: Project; onDone: () => voi
           placeholder="Siglas, reactivos y nombres que se dictan: GFAP, CA1, Alexa 488"
           className="min-h-16 text-base"
         />
-        <p className="text-xs text-muted-foreground">Ayuda a que la transcripción escriba bien esos términos.</p>
+        <p className="text-xs text-muted-foreground">
+          Ayuda a que la transcripción escriba bien esos términos.
+        </p>
       </div>
       {save.error && (
         <p role="alert" className="text-sm text-destructive">
@@ -161,7 +198,13 @@ function ProjectForm({ project, onDone }: { project?: Project; onDone: () => voi
         </Button>
       </div>
       {project && (
-        <Button type="button" variant="ghost" className="h-12" disabled={save.isPending} onClick={() => submit(project.status === "activo" ? "archivado" : "activo")}>
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-12"
+          disabled={save.isPending}
+          onClick={() => submit(project.status === "activo" ? "archivado" : "activo")}
+        >
           {project.status === "activo" ? "Archivar proyecto" : "Reactivar proyecto"}
         </Button>
       )}
