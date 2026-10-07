@@ -36,12 +36,12 @@ Las migraciones están en [`supabase/migrations/`](supabase/migrations). Sin la 
 se aplican en el panel: **SQL Editor → New query**, pegar el contenido de cada archivo **en
 orden** (por nombre) y pulsar **Run**.
 
-| Archivo                      | Qué hace                                                     |
-| ---------------------------- | ------------------------------------------------------------ |
-| `…_esquema.sql`              | Tablas, restricciones e índices                              |
-| `…_integridad.sql`           | Ciclo de vida de entradas, revisiones, búsqueda, inmutables  |
-| `…_rls_storage.sql`          | Permisos, RLS y bucket privado `attachments`                 |
-| `…_plantillas_iniciales.sql` | Perfil, 11 plantillas y recordatorios al crear cada cuenta   |
+| Archivo                      | Qué hace                                                    |
+| ---------------------------- | ----------------------------------------------------------- |
+| `…_esquema.sql`              | Tablas, restricciones e índices                             |
+| `…_integridad.sql`           | Ciclo de vida de entradas, revisiones, búsqueda, inmutables |
+| `…_rls_storage.sql`          | Permisos, RLS y bucket privado `attachments`                |
+| `…_plantillas_iniciales.sql` | Perfil, 11 plantillas y recordatorios al crear cada cuenta  |
 
 Reglas que impone la base de datos (no solo la app):
 
