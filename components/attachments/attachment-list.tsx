@@ -110,10 +110,13 @@ export function AttachmentList({
 
             {a.kind === "foto" &&
               (editable ? (
-                <CaptionInput attachment={a} />
+                <CaptionInput key={`${a.id}:${a.caption ?? ""}`} attachment={a} />
               ) : (
                 a.caption && <p className="text-sm">{a.caption}</p>
               ))}
+            {a.kind === "foto" && !a.caption && a.ai_description && (
+              <PhotoDescription attachment={a} canUse={Boolean(editable)} />
+            )}
           </li>
         );
       })}
@@ -187,6 +190,31 @@ function TranscriptionView({
         <RotateCcw className="size-4" aria-hidden />
         {failed ? "Reintentar transcripción" : "Transcribir"}
       </Button>
+    </div>
+  );
+}
+
+/** Descripción de la IA de una foto; se puede usar como pie de foto (§7.6). */
+function PhotoDescription({ attachment, canUse }: { attachment: Attachment; canUse: boolean }) {
+  const update = useUpdateCaption();
+  return (
+    <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+      <p>
+        <span className="font-medium">IA:</span> {attachment.ai_description}
+      </p>
+      {attachment.ai_extracted_text && (
+        <p className="font-mono text-xs">«{attachment.ai_extracted_text}»</p>
+      )}
+      {canUse && (
+        <Button
+          variant="ghost"
+          className="h-12 self-start"
+          disabled={update.isPending}
+          onClick={() => update.mutate({ id: attachment.id, caption: attachment.ai_description })}
+        >
+          Usar como pie de foto
+        </Button>
+      )}
     </div>
   );
 }

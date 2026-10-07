@@ -7,7 +7,7 @@ import type { Tables } from "@/lib/supabase/database.types";
 
 export type Transcription = Tables<"transcriptions">;
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+export async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -78,4 +78,37 @@ export async function resolveSuggestion(
 ) {
   const { error } = await createClient().from("ai_suggestions").update({ status }).eq("id", id);
   if (error) throw error;
+}
+
+/** Describe una foto con IA al subirla (§7.6); el resultado se guarda en el adjunto. */
+export function useAnalyzePhoto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (attachmentId: string) =>
+      postJson("/api/ai/analyze-photo", { attachment_id: attachmentId }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["attachments"] }),
+  });
+}
+
+/**
+ * Última sugerencia de llenado pendiente de revisar de una entrada (p. ej. la que se lanzó al
+ * aceptar una tarjeta de la bandeja). Se muestra al abrir la entrada.
+ */
+export function usePendingFill(entryId: string) {
+  return useQuery({
+    queryKey: ["ai_suggestions", "fill", entryId],
+    queryFn: async () => {
+      const { data, error } = await createClient()
+        .from("ai_suggestions")
+        .select("id, output")
+        .eq("entry_id", entryId)
+        .eq("kind", "llenado_plantilla")
+        .eq("status", "pendiente_revision")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
 }

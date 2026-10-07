@@ -61,12 +61,13 @@ type Supabase = Awaited<ReturnType<typeof requireUser>>["supabase"];
 
 /**
  * Límite diario de llamadas a la IA por usuario (AI_DAILY_CALL_LIMIT, §7 "Costos y control").
- * Cada llamada deja una fila en transcriptions o ai_suggestions; se cuentan las de 24 h.
+ * Cada llamada deja rastro (fila en transcriptions o ai_suggestions, o foto analizada); se
+ * cuentan las de las últimas 24 h.
  */
 export async function enforceDailyLimit(supabase: Supabase) {
   const limit = Number(process.env.AI_DAILY_CALL_LIMIT ?? 100);
   const since = new Date(Date.now() - 24 * 3600_000).toISOString();
-  const [t, s] = await Promise.all([
+  const [t, s, p] = await Promise.all([
     supabase
       .from("transcriptions")
       .select("id", { count: "exact", head: true })
@@ -75,8 +76,14 @@ export async function enforceDailyLimit(supabase: Supabase) {
       .from("ai_suggestions")
       .select("id", { count: "exact", head: true })
       .gte("created_at", since),
+    supabase
+      .from("attachments")
+      .select("id", { count: "exact", head: true })
+      .eq("kind", "foto")
+      .neq("ai_status", "pendiente")
+      .gte("updated_at", since),
   ]);
-  if ((t.count ?? 0) + (s.count ?? 0) >= limit) {
+  if ((t.count ?? 0) + (s.count ?? 0) + (p.count ?? 0) >= limit) {
     throw new AiError(`Llegaste al límite de ${limit} usos de IA en 24 horas.`, 429);
   }
 }
@@ -93,16 +100,20 @@ export function logUsage(entry: {
   console.info("[ai:uso]", JSON.stringify(entry));
 }
 
-/** Llama al modelo de texto con salida estructurada (JSON Schema estricto) y regresa el JSON. */
+/**
+ * Llama al modelo con salida estructurada (JSON Schema estricto) y regresa el JSON. `input`
+ * puede ser texto o contenido con imágenes (modelo de visión).
+ */
 export async function structuredCall(opts: {
   kind: string;
   userId: string;
   name: string;
   schema: Record<string, unknown>;
   instructions: string;
-  input: string;
+  input: string | OpenAI.Responses.ResponseInput;
+  modelKind?: "text" | "vision";
 }) {
-  const m = model("text");
+  const m = model(opts.modelKind ?? "text");
   const response = await openai().responses.create({
     model: m,
     instructions: opts.instructions,

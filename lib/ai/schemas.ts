@@ -121,3 +121,57 @@ export const suggestResponseSchema = z.object({
 });
 
 export type SuggestOutput = z.infer<typeof suggestResponseSchema> & { method: "reglas" | "ia" };
+
+/** Respuesta de "organizar bandeja" (§7.6). Los enum limitan a ids reales del usuario. */
+export function organizeResponseJsonSchema(
+  attachmentIds: string[],
+  templateIds: string[],
+  draftIds: string[],
+): JsonSchema {
+  return {
+    type: "object",
+    additionalProperties: false,
+    required: ["groups"],
+    properties: {
+      groups: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: [
+            "attachment_ids",
+            "template_id",
+            "target",
+            "target_entry_id",
+            "title",
+            "confidence",
+            "reasoning",
+          ],
+          properties: {
+            attachment_ids: { type: "array", items: { type: "string", enum: attachmentIds } },
+            template_id: { type: ["string", "null"], enum: [...templateIds, null] },
+            target: { type: "string", enum: ["nueva_entrada", "entrada_existente"] },
+            target_entry_id: { type: ["string", "null"], enum: [...draftIds, null] },
+            title: { type: "string", description: "Título corto (máx. 60 caracteres)" },
+            confidence: { type: "number", minimum: 0, maximum: 1 },
+            reasoning: { type: "string", description: "Una línea en español con la evidencia" },
+          },
+        },
+      },
+    },
+  };
+}
+
+export const organizeResponseSchema = z.object({
+  groups: z.array(
+    z.object({
+      attachment_ids: z.array(z.string()),
+      template_id: z.string().nullable(),
+      target: z.enum(["nueva_entrada", "entrada_existente"]),
+      target_entry_id: z.string().nullable(),
+      title: z.string(),
+      confidence: z.number().min(0).max(1),
+      reasoning: z.string(),
+    }),
+  ),
+});

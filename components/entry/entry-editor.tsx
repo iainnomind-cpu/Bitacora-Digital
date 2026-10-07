@@ -18,11 +18,11 @@ import {
   type Entry,
   type EntryDraft,
 } from "@/lib/queries/entries";
-import { resolveSuggestion, useFillTemplate } from "@/lib/queries/ai";
+import { resolveSuggestion, useFillTemplate, usePendingFill } from "@/lib/queries/ai";
 import { useTimeZone } from "@/lib/queries/profile";
 import { useTemplateVersion, type TemplateWithFields } from "@/lib/queries/templates";
 import { validateEntryData, type EntryData } from "@/lib/templates/values";
-import type { FillOutput } from "@/lib/ai/schemas";
+import { fillResponseSchema, type FillOutput } from "@/lib/ai/schemas";
 import { AiFillReview } from "./ai-fill-review";
 import { DynamicForm } from "./dynamic-form";
 import { EntryHeader } from "./entry-header";
@@ -133,7 +133,22 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
   // Llenado con IA (§7.2): se propone, se revisa y solo se aplica lo que el usuario marca.
   const timeZone = useTimeZone();
   const fill = useFillTemplate(entry.id);
-  const [suggestion, setSuggestion] = useState<{ id: string; output: FillOutput } | null>(null);
+  const [localSuggestion, setSuggestion] = useState<{ id: string; output: FillOutput } | null>(
+    null,
+  );
+  // Una sugerencia pendiente guardada (p. ej. al aceptar una tarjeta de la bandeja) se muestra
+  // al abrir la entrada, hasta que se aplica o se descarta.
+  const pendingFill = usePendingFill(entry.id);
+  const [handled, setHandled] = useState<Set<string>>(() => new Set());
+  const pendingOutput = pendingFill.data
+    ? fillResponseSchema(template.fields).safeParse(pendingFill.data.output)
+    : null;
+  const suggestion =
+    localSuggestion ??
+    (pendingFill.data && pendingOutput?.success && !handled.has(pendingFill.data.id)
+      ? { id: pendingFill.data.id, output: pendingOutput.data as FillOutput }
+      : null);
+  const markHandled = (id: string) => setHandled((prev) => new Set(prev).add(id));
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
 
@@ -165,6 +180,7 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
       const saved = await saveEntryDraft(entry.id, next, "ia_aceptada");
       queryClient.setQueryData(entryKeys.detail(entry.id), saved);
       await resolveSuggestion(suggestion.id, all ? "aceptada" : "aceptada_parcial");
+      markHandled(suggestion.id);
       setSuggestion(null);
     } catch (e) {
       setApplyError(e instanceof Error ? e.message : String(e));
@@ -174,7 +190,10 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
   };
 
   const discardSuggestion = () => {
-    if (suggestion) void resolveSuggestion(suggestion.id, "rechazada").catch(() => {});
+    if (suggestion) {
+      void resolveSuggestion(suggestion.id, "rechazada").catch(() => {});
+      markHandled(suggestion.id);
+    }
     setSuggestion(null);
   };
 
