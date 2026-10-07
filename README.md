@@ -66,7 +66,7 @@ Reglas que impone la base de datos (no solo la app):
   create extension if not exists pg_net;
   select cron.schedule(
     'bitacora-recordatorios',
-    '*/10 * * * *',
+    '* * * * *',
     $$ select net.http_post(
          url := 'https://<tu-app>.vercel.app/api/cron/reminders',
          headers := jsonb_build_object('Authorization', 'Bearer <CRON_SECRET>')
@@ -74,12 +74,23 @@ Reglas que impone la base de datos (no solo la app):
   );
   ```
 
-  El endpoint calcula la hora local de cada usuario y no repite envíos, así que cualquier
-  intervalo de 5 a 15 minutos funciona. Para quitarlo: `select cron.unschedule('bitacora-recordatorios');`
+  Cada minuto, para que los temporizadores del modo guiado avisen a tiempo. El endpoint calcula
+  la hora local de cada usuario y no repite envíos. Para quitarlo: `select cron.unschedule('bitacora-recordatorios');`
 
 - **iPhone:** las notificaciones solo llegan con la app instalada en la pantalla de inicio
   (iOS 16.4+). Ajustes → Instalar la app muestra los pasos.
 - **Íconos:** `node scripts/gen-icons.mjs` regenera `public/icons/`.
+
+## Para cualquier laboratorio
+
+- **Mi laboratorio** (Ajustes): área, técnicas y vocabulario; la IA lo usa en todas sus funciones.
+- **Proyectos**: agrupan entradas y agregan su propio contexto y vocabulario.
+- **Tipos de muestra** configurables (Muestras → Tipos de muestra).
+- **Plantillas**: editor, creación desde foto/PDF/texto del protocolo y paquetes por disciplina
+  (biología molecular, inmunología, conducta, cultivo celular, histología).
+- **Calculadora de soluciones** (`/calculadora`): molaridad, diluciones, %, seriadas, mezcla
+  maestra, recetas guardadas y biblioteca de reactivos. La IA solo propone composiciones; las
+  cantidades salen de `lib/chem` (funciones puras probadas contra valores de referencia).
 
 ## Scripts
 

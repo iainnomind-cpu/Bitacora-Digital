@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Library, Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { TemplateList } from "@/components/templates/template-list";
 import { buttonVariants } from "@/components/ui/button";
@@ -32,6 +32,14 @@ export default function PlantillasPage() {
           En blanco
         </Link>
       </div>
+      <Link
+        href="/plantillas/paquetes"
+        className="mb-4 flex min-h-12 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
+      >
+        <Library className="size-5 text-muted-foreground" aria-hidden />
+        <span className="flex-1 font-medium">Plantillas por disciplina</span>
+        <span className="text-sm text-muted-foreground">molecular, inmuno, conducta…</span>
+      </Link>
       <TemplateList />
     </>
   );
