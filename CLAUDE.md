@@ -11,4 +11,8 @@
   de `<Suspense>`. La autenticación y redirecciones viven en `proxy.ts` (antes `middleware`).
 - shadcn/ui usa el estilo `base-nova` (Base UI, no Radix): no hay `asChild`; para enlaces con
   estilo de botón usar `buttonVariants()` sobre `<Link>`.
+- Base de datos: migraciones en `supabase/migrations/` (se aplican pegándolas en el SQL Editor;
+  no hay CLI). Las tablas nuevas necesitan `grant` explícito a `authenticated` y RLS: la
+  migración `_rls_storage.sql` revoca los permisos por defecto de `anon`/`authenticated`.
+  Las entradas cerradas las bloquea un trigger; el cliente solo debe mostrar el error.
 - Antes de terminar una etapa: `npm run typecheck`, `npm run lint`, `npm run build`.

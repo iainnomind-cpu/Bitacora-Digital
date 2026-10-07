@@ -30,6 +30,27 @@ En el panel de Supabase:
   Con la plantilla por defecto el enlace solo funciona en el mismo navegador que lo pidió, y
   el correo no trae el código.
 
+## Base de datos
+
+Las migraciones están en [`supabase/migrations/`](supabase/migrations). Sin la CLI de Supabase,
+se aplican en el panel: **SQL Editor → New query**, pegar el contenido de cada archivo **en
+orden** (por nombre) y pulsar **Run**.
+
+| Archivo                      | Qué hace                                                     |
+| ---------------------------- | ------------------------------------------------------------ |
+| `…_esquema.sql`              | Tablas, restricciones e índices                              |
+| `…_integridad.sql`           | Ciclo de vida de entradas, revisiones, búsqueda, inmutables  |
+| `…_rls_storage.sql`          | Permisos, RLS y bucket privado `attachments`                 |
+| `…_plantillas_iniciales.sql` | Perfil, 11 plantillas y recordatorios al crear cada cuenta   |
+
+Reglas que impone la base de datos (no solo la app):
+
+- Una entrada nace en `borrador`; cada guardado con cambios deja la versión anterior en
+  `entry_revisions`. Al pasar a `cerrada` ya no se edita: solo admite adendas. Se puede
+  anular (con motivo), nunca borrar.
+- Las versiones de plantilla, revisiones y adendas no se modifican.
+- Búsqueda: `search_vector @@ websearch_to_tsquery('spanish', unaccent_es(:q))` (sin acentos).
+
 ## Scripts
 
 | Script              | Qué hace                  |
