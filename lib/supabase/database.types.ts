@@ -665,6 +665,66 @@ export type Database = {
           },
         ];
       };
+      scheduled_tasks: {
+        Row: {
+          id: string;
+          user_id: string;
+          series_id: string | null;
+          title: string;
+          notes: string | null;
+          template_id: string | null;
+          project_id: string | null;
+          sample_codes: string[];
+          starts_at: string;
+          duration_minutes: number | null;
+          remind_at: string | null;
+          notified_at: string | null;
+          status: string;
+          entry_id: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          series_id?: string | null;
+          title: string;
+          notes?: string | null;
+          template_id?: string | null;
+          project_id?: string | null;
+          sample_codes?: string[];
+          starts_at: string;
+          duration_minutes?: number | null;
+          remind_at?: string | null;
+          notified_at?: string | null;
+          status?: string;
+          entry_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          series_id?: string | null;
+          title?: string;
+          notes?: string | null;
+          template_id?: string | null;
+          project_id?: string | null;
+          sample_codes?: string[];
+          starts_at?: string;
+          duration_minutes?: number | null;
+          remind_at?: string | null;
+          notified_at?: string | null;
+          status?: string;
+          entry_id?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       solution_recipes: {
         Row: {
           id: string;

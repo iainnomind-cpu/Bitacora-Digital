@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { FlaskConical, Home, Plus, Search, Settings } from "lucide-react";
+import { CalendarDays, FlaskConical, Home, Plus, Search, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/hoy", label: "Hoy", icon: Home },
-  { href: "/buscar", label: "Buscar", icon: Search },
+  { href: "/calendario", label: "Calendario", icon: CalendarDays },
   { href: "/entrada/nueva", label: "Nueva", icon: Plus, primary: true },
+  { href: "/buscar", label: "Buscar", icon: Search },
   { href: "/muestras", label: "Muestras", icon: FlaskConical },
   { href: "/ajustes", label: "Ajustes", icon: Settings },
 ] as const;
@@ -35,7 +36,7 @@ function ActiveNavList() {
 
 function NavList({ pathname }: { pathname: string | null }) {
   return (
-    <ul className="mx-auto grid max-w-lg grid-cols-5">
+    <ul className="mx-auto grid max-w-lg grid-cols-6">
       {items.map(({ href, label, icon: Icon, ...rest }) => {
         const active = pathname != null && (pathname === href || pathname.startsWith(`${href}/`));
         const primary = "primary" in rest;

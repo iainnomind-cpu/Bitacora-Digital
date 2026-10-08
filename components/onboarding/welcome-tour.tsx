@@ -5,6 +5,7 @@ import {
   Beaker,
   BellRing,
   BookOpenText,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   FlaskConical,
@@ -69,6 +70,16 @@ const SLIDES: Slide[] = [
       "En Hoy ves las entradas del día y los borradores pendientes.",
       "Los botones Audio, Foto y Nota guardan al instante, sin elegir plantilla: van a la bandeja.",
       "El botón ➕ crea una entrada: escribe “voy a hacer…” y la IA te sugiere la plantilla.",
+    ],
+  },
+  {
+    icon: CalendarDays,
+    title: "Calendario",
+    points: [
+      "Cada día muestra lo que registraste, con la hora; toca un día para verlo.",
+      "Programa tareas (una vez o que se repitan) con aviso al teléfono.",
+      "«Empezar» convierte la tarea en una entrada con su plantilla y muestras ya puestas.",
+      "Los viernes, la Revisión semanal te resume la semana con IA y se exporta a PDF.",
     ],
   },
   {

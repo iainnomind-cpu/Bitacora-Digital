@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Beaker, Plus } from "lucide-react";
 import { CaptureBar } from "@/components/attachments/capture-bar";
+import { TodayTasks } from "@/components/calendar/today-tasks";
 import { PageHeader } from "@/components/layout/page-header";
 import { GettingStarted, GuideBanner } from "@/components/onboarding/guide";
 import { ProjectSwitcher } from "@/components/projects/project-switcher";
@@ -49,6 +50,7 @@ export default function HoyPage() {
         </Link>
       </section>
 
+      <TodayTasks />
       <TodayEntries />
     </>
   );

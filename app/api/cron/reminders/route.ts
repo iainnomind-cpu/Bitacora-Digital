@@ -9,7 +9,7 @@ export const maxDuration = 60;
 const URLS: Record<string, string> = {
   inicio_dia: "/hoy",
   cierre_dia: "/hoy",
-  revision_semanal: "/buscar",
+  revision_semanal: "/revision-semanal",
   personalizado: "/hoy",
   temporizador: "/hoy",
 };
@@ -85,9 +85,40 @@ async function handle(request: NextRequest) {
         .in("id", result.sent);
     }
   }
+  // Tareas programadas del calendario cuyo aviso ya toca (una sola vez, con 30 min de gracia).
+  const { data: tasks } = await db
+    .from("scheduled_tasks")
+    .select("id, user_id, title, starts_at")
+    .eq("status", "pendiente")
+    .is("notified_at", null)
+    .lte("remind_at", now.toISOString())
+    .gte("remind_at", new Date(now.getTime() - 30 * 60_000).toISOString());
+  for (const t of tasks ?? []) {
+    await db.from("scheduled_tasks").update({ notified_at: now.toISOString() }).eq("id", t.id);
+    const userSubs = (subs ?? []).filter((s) => s.user_id === t.user_id);
+    if (!userSubs.length) continue;
+    const zone = tz.get(t.user_id) ?? DEFAULT_TIMEZONE;
+    const time = new Intl.DateTimeFormat("es-MX", { timeStyle: "short", timeZone: zone }).format(
+      new Date(t.starts_at),
+    );
+    const result = await sendPush(userSubs, {
+      title: t.title,
+      body: `Programado a las ${time}. Toca para empezar.`,
+      url: `/calendario?dia=${localDayAndWeekday(new Date(t.starts_at), zone).day}`,
+      tag: `tarea-${t.id}`,
+    });
+    sent += result.sent.length;
+    gone.push(...result.gone);
+  }
+
   if (gone.length) await db.from("push_subscriptions").delete().in("id", gone);
 
-  return NextResponse.json({ due: due.length, sent, removed: gone.length });
+  return NextResponse.json({
+    due: due.length,
+    tasks: tasks?.length ?? 0,
+    sent,
+    removed: gone.length,
+  });
 }
 
 export const GET = handle;

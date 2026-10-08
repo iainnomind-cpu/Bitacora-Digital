@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Beaker, ChevronRight, FlaskConical, LayoutTemplate } from "lucide-react";
+import { Beaker, ChevronRight, ClipboardCheck, FlaskConical, LayoutTemplate } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { GuideBanner } from "@/components/onboarding/guide";
 import { TourButton } from "@/components/onboarding/tour-button";
@@ -65,6 +65,14 @@ export default function AjustesPage() {
             >
               <Beaker className="size-5 text-muted-foreground" aria-hidden />
               <span className="flex-1 font-medium">Calculadora de soluciones</span>
+              <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
+            </Link>
+            <Link
+              href="/revision-semanal"
+              className="flex min-h-16 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
+            >
+              <ClipboardCheck className="size-5 text-muted-foreground" aria-hidden />
+              <span className="flex-1 font-medium">Revisión semanal</span>
               <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
             </Link>
           </div>

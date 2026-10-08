@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ChevronLeft, History } from "lucide-react";
+import { ChevronLeft, FileDown, History } from "lucide-react";
 import { TemplateIcon } from "@/components/templates/template-icon";
 import { buttonVariants } from "@/components/ui/button";
 import { formatEntryDate } from "@/lib/datetime";
@@ -29,6 +29,13 @@ export function EntryHeader({
         </Link>
         <div className="flex items-center gap-1">
           {aside}
+          <Link
+            href={`/imprimir?entrada=${entry.id}`}
+            aria-label="Exportar a PDF"
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-12")}
+          >
+            <FileDown className="size-4" aria-hidden />
+          </Link>
           <Link
             href={`/entrada/${entry.id}/historial`}
             className={cn(buttonVariants({ variant: "ghost" }), "h-12 gap-1.5")}
