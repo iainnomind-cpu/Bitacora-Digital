@@ -12,10 +12,16 @@ import {
   PercentCalc,
   SerialCalc,
 } from "./calculators";
+import { ProtocolScaler } from "./protocol-scaler";
 import { ReagentLibrary } from "./reagent-library";
 import { Recipes } from "./recipes";
 
 const TOOLS = [
+  {
+    key: "protocolo",
+    label: "Desde protocolo",
+    help: "Sube la foto o el PDF de un protocolo o receta: te digo cuánto usar de cada cosa para el volumen que quieras, y resuelvo tus dudas.",
+  },
   {
     key: "molaridad",
     label: "Molaridad",
@@ -54,7 +60,7 @@ export function CalculatorView() {
   const router = useRouter();
   const pathname = usePathname();
   const requested = params.get("herramienta");
-  const tool: Tool = TOOLS.some((t) => t.key === requested) ? (requested as Tool) : "molaridad";
+  const tool: Tool = TOOLS.some((t) => t.key === requested) ? (requested as Tool) : "protocolo";
   const current = TOOLS.find((t) => t.key === tool)!;
 
   return (
@@ -79,6 +85,7 @@ export function CalculatorView() {
       </div>
       <p className="text-sm text-muted-foreground">{current.help}</p>
       <div role="tabpanel">
+        {tool === "protocolo" && <ProtocolScaler />}
         {tool === "molaridad" && <MolarityCalc />}
         {tool === "dilucion" && <DilutionCalc />}
         {tool === "factor" && <FactorCalc initialFactor={params.get("dilucion")} />}

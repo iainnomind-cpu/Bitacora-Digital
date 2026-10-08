@@ -4,7 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RecipeComponent } from "@/lib/chem/solutions";
 import { createClient } from "@/lib/supabase/client";
 import type { Json, Tables } from "@/lib/supabase/database.types";
+import type { QuestionOutput, ReadRecipeOutput } from "@/lib/ai/recipe-read";
+import { compressImage } from "@/lib/media/image";
 import { postJson } from "./ai";
+import { uploadToStorage } from "./attachments";
 
 export type LibraryReagent = Tables<"reagent_library">;
 export type SavedRecipe = Tables<"solution_recipes"> & { components: RecipeComponent[] };
@@ -132,5 +135,26 @@ export function useAiRecipe() {
   return useMutation({
     mutationFn: (description: string) =>
       postJson<AiRecipe>("/api/ai/solution-recipe", { description }),
+  });
+}
+
+/** Sube fotos/PDF (o usa texto) y pide a la IA que lea las soluciones del protocolo. */
+export function useReadRecipe() {
+  return useMutation({
+    mutationFn: async ({ files, text }: { files: File[]; text: string }) => {
+      const paths: string[] = [];
+      for (const file of files) {
+        const blob = file.type === "application/pdf" ? file : await compressImage(file, 2600, 0.9);
+        paths.push((await uploadToStorage(blob, "protocolos")).path);
+      }
+      return postJson<ReadRecipeOutput>("/api/ai/read-recipe", { paths, text });
+    },
+  });
+}
+
+export function useSolutionQuestion() {
+  return useMutation({
+    mutationFn: (input: { question: string; context?: string }) =>
+      postJson<QuestionOutput>("/api/ai/solution-question", input),
   });
 }

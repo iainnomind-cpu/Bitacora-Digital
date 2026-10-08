@@ -4,6 +4,7 @@ import { z } from "zod";
 import { TEMPLATE_COLORS, TEMPLATE_ICONS } from "@/components/templates/template-icon";
 import { contextBlock, labContext } from "@/lib/ai/context";
 import { protocolJsonSchema, protocolResponseSchema, protocolToDraft } from "@/lib/ai/protocol";
+import { protocolFilesContent } from "@/lib/ai/files";
 import { PROTOCOL_INSTRUCTIONS } from "@/lib/ai/prompts";
 import {
   AiError,
@@ -37,9 +38,6 @@ export async function POST(request: NextRequest) {
     const body = bodySchema.safeParse(await request.json().catch(() => null));
     if (!body.success) throw new AiError(body.error.issues[0]?.message ?? "Datos inválidos.");
     const { paths, text } = body.data;
-    if (paths.some((p) => !p.startsWith(`${userId}/protocolos/`))) {
-      throw new AiError("Archivo no válido.", 403);
-    }
 
     await enforceDailyLimit(supabase);
 
@@ -49,22 +47,7 @@ export async function POST(request: NextRequest) {
         text: text?.trim() ? `Texto del protocolo:\n${text.trim()}` : "Protocolo adjunto.",
       },
     ];
-    for (const path of paths) {
-      if (path.endsWith(".pdf")) {
-        const file = await supabase.storage.from("attachments").download(path);
-        if (file.error) throw new AiError("No se pudo leer el PDF.", 502);
-        const base64 = Buffer.from(await file.data.arrayBuffer()).toString("base64");
-        content.push({
-          type: "input_file",
-          filename: "protocolo.pdf",
-          file_data: `data:application/pdf;base64,${base64}`,
-        });
-      } else {
-        const signed = await supabase.storage.from("attachments").createSignedUrl(path, 600);
-        if (signed.error) throw new AiError("No se pudo leer una foto.", 502);
-        content.push({ type: "input_image", image_url: signed.data.signedUrl, detail: "high" });
-      }
-    }
+    content.push(...(await protocolFilesContent(supabase, userId, paths)));
 
     const { data: types } = await supabase
       .from("sample_types")

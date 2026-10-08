@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Beaker, ChevronRight, FlaskConical, LayoutTemplate } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
+import { TourButton } from "@/components/onboarding/tour-button";
 import { AccountCard } from "@/components/settings/account-card";
 import { InstallCard } from "@/components/settings/install-card";
 import { LabCard } from "@/components/settings/lab-card";
@@ -38,6 +39,7 @@ export default function AjustesPage() {
             Bitácora
           </h2>
           <div className="flex flex-col gap-2">
+            <TourButton />
             <Link
               href="/plantillas"
               className="flex min-h-16 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"

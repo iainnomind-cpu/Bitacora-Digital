@@ -1,4 +1,5 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { TourGate } from "@/components/onboarding/welcome-tour";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
@@ -7,6 +8,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         {children}
       </main>
       <BottomNav />
+      <TourGate />
     </>
   );
 }
