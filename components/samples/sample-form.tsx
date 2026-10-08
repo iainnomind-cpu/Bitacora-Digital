@@ -14,6 +14,7 @@ import {
   type SampleStatus,
 } from "@/lib/queries/samples";
 import { useSampleTypes } from "@/lib/queries/sample-types";
+import { ParentPicker } from "./parent-picker";
 
 type SampleType = string;
 
@@ -145,22 +146,13 @@ export function SampleForm({
           <Label htmlFor={`${formId}-parent`} className="text-base">
             Viene de ({parentTypes.map((t) => sampleTypes.labelOf(t).toLowerCase()).join(" o ")})
           </Label>
-          <Input
+          <ParentPicker
             id={`${formId}-parent`}
-            list={`${formId}-parents`}
+            options={parentOptions}
+            all={samples.data ?? []}
             value={parentCode}
-            onChange={(e) => setParentCode(e.target.value)}
-            placeholder="Código de la muestra de origen (opcional)"
-            autoCapitalize="characters"
-            className={`${fieldInputClass} font-mono`}
+            onChange={setParentCode}
           />
-          <datalist id={`${formId}-parents`}>
-            {parentOptions.map((s) => (
-              <option key={s.id} value={s.code}>
-                {sampleTypes.labelOf(s.sample_type)}
-              </option>
-            ))}
-          </datalist>
         </div>
       )}
 
