@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Beaker, ChevronRight, FlaskConical, LayoutTemplate } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
+import { GuideBanner } from "@/components/onboarding/guide";
 import { TourButton } from "@/components/onboarding/tour-button";
 import { AccountCard } from "@/components/settings/account-card";
 import { InstallCard } from "@/components/settings/install-card";
@@ -18,6 +19,8 @@ export default function AjustesPage() {
   return (
     <>
       <PageHeader title="Ajustes" />
+      <GuideBanner task="laboratorio" />
+      <GuideBanner task="notificaciones" />
       <div className="flex flex-col gap-6">
         <section aria-labelledby="apariencia">
           <h2 id="apariencia" className="mb-3 font-heading text-lg font-semibold">
@@ -25,8 +28,8 @@ export default function AjustesPage() {
           </h2>
           <ThemePicker />
         </section>
-        <section aria-labelledby="laboratorio">
-          <h2 id="laboratorio" className="mb-1 font-heading text-lg font-semibold">
+        <section id="laboratorio" aria-labelledby="laboratorio-titulo" className="scroll-mt-4">
+          <h2 id="laboratorio-titulo" className="mb-1 font-heading text-lg font-semibold">
             Mi laboratorio
           </h2>
           <p className="mb-3 text-sm text-muted-foreground">
@@ -79,8 +82,8 @@ export default function AjustesPage() {
           <p className="mb-3 text-sm text-muted-foreground">En tu zona horaria.</p>
           <RemindersCard />
         </section>
-        <section aria-labelledby="instalar">
-          <h2 id="instalar" className="mb-3 font-heading text-lg font-semibold">
+        <section id="instalar" aria-labelledby="instalar-titulo" className="scroll-mt-4">
+          <h2 id="instalar-titulo" className="mb-3 font-heading text-lg font-semibold">
             Instalar la app
           </h2>
           <InstallCard />

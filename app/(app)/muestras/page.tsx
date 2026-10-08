@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/page-header";
+import { GuideBanner } from "@/components/onboarding/guide";
 import { SamplesView } from "@/components/samples/samples-view";
 
 export const metadata: Metadata = { title: "Muestras" };
@@ -12,6 +13,7 @@ export default function MuestrasPage() {
           Animales, tejidos, bloques, navajas, rejillas, laminillas y muestras de microCT.
         </p>
       </PageHeader>
+      <GuideBanner task="derivada" />
       <SamplesView />
     </>
   );

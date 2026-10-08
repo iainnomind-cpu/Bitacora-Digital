@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CalculatorView } from "@/components/calc/calculator-view";
 import { PageHeader } from "@/components/layout/page-header";
+import { GuideBanner } from "@/components/onboarding/guide";
 
 export const metadata: Metadata = { title: "Calculadora de soluciones" };
 
@@ -11,6 +12,7 @@ export default function CalculadoraPage() {
       <PageHeader title="Soluciones">
         <p className="text-sm text-muted-foreground">Calculadora para preparar soluciones.</p>
       </PageHeader>
+      <GuideBanner task="calculadora" />
       {/* useSearchParams es dato de tiempo de ejecución (cacheComponents). */}
       <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted" />}>
         <CalculatorView />

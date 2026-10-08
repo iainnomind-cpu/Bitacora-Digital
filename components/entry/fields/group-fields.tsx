@@ -1,13 +1,12 @@
 "use client";
 
-import { useId, useState } from "react";
 import Link from "next/link";
-import { Beaker, Plus, Trash2, X } from "lucide-react";
+import { Beaker, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { parseDilution } from "@/lib/chem/solutions";
-import { useSampleTypes } from "@/lib/queries/sample-types";
-import { useSampleCodes } from "@/lib/queries/samples";
+import { useSamples } from "@/lib/queries/samples";
+import { SamplePicker } from "@/components/samples/sample-picker";
 import {
   emptyReagent,
   emptyStep,
@@ -28,101 +27,36 @@ export function SampleRefField({
   onChange,
   disabled,
   invalid,
+  form,
 }: FieldProps<"sample_ref">) {
-  const listId = useId();
-  const { data: codes = [] } = useSampleCodes(field.sample_type);
-  const typeLabel = useSampleTypes().labelOf(field.sample_type).toLowerCase();
-  const [draft, setDraft] = useState("");
+  const samples = useSamples();
+  const codes = Array.isArray(value)
+    ? (value as string[])
+    : typeof value === "string" && value
+      ? [value]
+      : [];
 
-  const datalist = (
-    <datalist id={listId}>
-      {codes.map((c) => (
-        <option key={c} value={c} />
-      ))}
-    </datalist>
+  // Muestras elegidas en los otros campos de muestra de la entrada (posibles orígenes).
+  const otherCodes = new Set(
+    (form?.fields ?? [])
+      .filter((f) => f.type === "sample_ref" && f.key !== field.key)
+      .flatMap((f) => {
+        const v = form?.data[f.key];
+        return Array.isArray(v) ? v : typeof v === "string" && v ? [v] : [];
+      }),
   );
-
-  if (!field.multiple) {
-    return (
-      <>
-        <Input
-          id={id}
-          list={listId}
-          value={typeof value === "string" ? value : ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
-          onBlur={(e) => onChange(e.target.value.trim() || null)}
-          placeholder={`Código de ${typeLabel}`}
-          autoCapitalize="characters"
-          disabled={disabled}
-          aria-invalid={invalid || undefined}
-          className={`${fieldInputClass} font-mono`}
-        />
-        {datalist}
-      </>
-    );
-  }
-
-  const current = Array.isArray(value) ? (value as string[]) : [];
-  const add = () => {
-    const code = draft.trim();
-    if (code && !current.includes(code)) onChange([...current, code]);
-    setDraft("");
-  };
+  const related = (samples.data ?? []).filter((s) => otherCodes.has(s.code));
 
   return (
-    <div className="flex flex-col gap-2">
-      {current.length > 0 && (
-        <ul className="flex flex-wrap gap-2">
-          {current.map((code) => (
-            <li
-              key={code}
-              className="flex h-12 items-center gap-1 rounded-xl border bg-card pr-1 pl-3 font-mono text-sm"
-            >
-              {code}
-              <button
-                type="button"
-                aria-label={`Quitar ${code}`}
-                disabled={disabled}
-                onClick={() => onChange(current.filter((c) => c !== code))}
-                className="flex size-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
-              >
-                <X className="size-4" aria-hidden />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="flex gap-2">
-        <Input
-          id={id}
-          list={listId}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              add();
-            }
-          }}
-          placeholder={`Código de ${typeLabel}`}
-          autoCapitalize="characters"
-          disabled={disabled}
-          aria-invalid={invalid || undefined}
-          className={`${fieldInputClass} font-mono`}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          className="h-12 px-4"
-          disabled={disabled || draft.trim() === ""}
-          onClick={add}
-        >
-          <Plus className="size-4" aria-hidden />
-          Agregar
-        </Button>
-      </div>
-      {datalist}
-    </div>
+    <SamplePicker
+      id={id}
+      field={field}
+      value={codes}
+      related={related}
+      disabled={disabled}
+      invalid={invalid}
+      onChange={(next) => onChange(field.multiple ? next : (next[0] ?? null))}
+    />
   );
 }
 

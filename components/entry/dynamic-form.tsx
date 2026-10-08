@@ -80,6 +80,7 @@ export function DynamicForm({
               onChange={(v) => onChange({ ...value, [field.key]: v })}
               disabled={disabled}
               invalid={Boolean(error)}
+              form={{ fields, data: value }}
             />
             {error && (
               <p role="alert" className="text-sm text-destructive">

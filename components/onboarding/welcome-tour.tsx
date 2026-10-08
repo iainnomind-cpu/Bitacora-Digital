@@ -113,6 +113,7 @@ const SLIDES: Slide[] = [
     points: [
       "Instálala en tu teléfono para abrirla como una app (Ajustes → Instalar la app).",
       "Activa las notificaciones para recordatorios del día y temporizadores.",
+      "En Hoy tienes «Primeros pasos»: te guía paso a paso para registrar tu primera muestra y tu primera entrada.",
       "Puedes repetir este recorrido cuando quieras desde Ajustes.",
     ],
   },

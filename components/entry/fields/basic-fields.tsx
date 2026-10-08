@@ -4,7 +4,8 @@ import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { FieldOf, FieldType } from "@/lib/templates/fields";
+import type { FieldDef, FieldOf, FieldType } from "@/lib/templates/fields";
+import type { EntryData } from "@/lib/templates/values";
 import { cn } from "@/lib/utils";
 import { chipClass, DateTimeInput, DurationInput, fieldInputClass, NumberInput } from "./inputs";
 
@@ -15,6 +16,8 @@ export type FieldProps<T extends FieldType> = {
   onChange: (value: unknown) => void;
   disabled?: boolean;
   invalid?: boolean;
+  /** Todo el formulario (para campos que dependen de otros, p. ej. muestras relacionadas). */
+  form?: { fields: FieldDef[]; data: EntryData };
 };
 
 const str = (v: unknown) => (typeof v === "string" ? v : "");

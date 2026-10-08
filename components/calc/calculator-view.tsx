@@ -1,6 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { markCalculatorUsed } from "@/lib/onboarding/guide";
 import { chipClass } from "@/components/entry/fields/inputs";
 import { cn } from "@/lib/utils";
 import {
@@ -62,6 +64,7 @@ export function CalculatorView() {
   const requested = params.get("herramienta");
   const tool: Tool = TOOLS.some((t) => t.key === requested) ? (requested as Tool) : "protocolo";
   const current = TOOLS.find((t) => t.key === tool)!;
+  useEffect(() => markCalculatorUsed(), []);
 
   return (
     <div className="flex flex-col gap-4">
@@ -76,7 +79,12 @@ export function CalculatorView() {
             type="button"
             role="tab"
             aria-selected={tool === t.key}
-            onClick={() => router.replace(`${pathname}?herramienta=${t.key}`, { scroll: false })}
+            onClick={() =>
+              router.replace(
+                `${pathname}?herramienta=${t.key}${params.get("guia") ? `&guia=${params.get("guia")}` : ""}`,
+                { scroll: false },
+              )
+            }
             className={cn(chipClass(tool === t.key), "shrink-0")}
           >
             {t.label}

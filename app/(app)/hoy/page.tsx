@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Beaker, Plus } from "lucide-react";
 import { CaptureBar } from "@/components/attachments/capture-bar";
 import { PageHeader } from "@/components/layout/page-header";
+import { GettingStarted, GuideBanner } from "@/components/onboarding/guide";
 import { ProjectSwitcher } from "@/components/projects/project-switcher";
 import { TodayDate } from "@/components/today/today-date";
 import { InboxLink } from "@/components/today/inbox-link";
@@ -22,6 +23,8 @@ export default function HoyPage() {
         <ProjectSwitcher />
       </div>
 
+      <GettingStarted />
+
       <Link
         href="/entrada/nueva"
         className={cn(buttonVariants(), "h-14 w-full gap-2 rounded-xl text-base")}
@@ -34,6 +37,7 @@ export default function HoyPage() {
         <h2 id="captura-rapida" className="sr-only">
           Captura rápida
         </h2>
+        <GuideBanner task="captura" />
         <CaptureBar entryId={null} />
         <InboxLink />
         <Link

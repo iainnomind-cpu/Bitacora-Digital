@@ -38,17 +38,6 @@ export function useSamples() {
   });
 }
 
-/** Códigos de muestras activas de un tipo, para autocompletar campos sample_ref. */
-export function useSampleCodes(sampleType: SampleType) {
-  const { data, ...rest } = useSamples();
-  return {
-    ...rest,
-    data: data
-      ?.filter((s) => s.sample_type === sampleType && s.status === "activa")
-      .map((s) => s.code),
-  };
-}
-
 function friendly(error: { code?: string; message: string }) {
   if (error.code === "23505") return new Error("Ya existe una muestra con ese código.");
   return new Error(error.message);
