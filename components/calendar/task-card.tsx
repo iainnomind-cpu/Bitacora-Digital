@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Ban, Check, Clock, Loader2, Play, Repeat, Trash2 } from "lucide-react";
 import { TemplateIcon } from "@/components/templates/template-icon";
 import { Button } from "@/components/ui/button";
+import { localDay } from "@/lib/calendar/dates";
 import { formatTime } from "@/lib/datetime";
 import { useNow } from "@/lib/hooks/use-now";
 import { useTimeZone } from "@/lib/queries/profile";
@@ -97,7 +98,14 @@ export function TaskCard({ task }: { task: ScheduledTask }) {
               onClick={() =>
                 start.mutate(
                   { task, timeZone },
-                  { onSuccess: (id) => router.push(`/entrada/${id}`) },
+                  {
+                    onSuccess: (ids) =>
+                      router.push(
+                        ids.length === 1
+                          ? `/entrada/${ids[0]}`
+                          : `/calendario?dia=${localDay(task.starts_at, timeZone)}`,
+                      ),
+                  },
                 )
               }
             >

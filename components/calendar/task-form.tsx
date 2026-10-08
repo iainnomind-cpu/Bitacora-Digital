@@ -167,7 +167,13 @@ export function TaskForm({ day, onDone }: { day: string; onDone: () => void }) {
           </select>
         </div>
       )}
-      <SampleChooser value={samples} onChange={setSamples} />
+      <SampleChooser
+        value={samples}
+        onChange={setSamples}
+        types={(template?.fields ?? []).flatMap((f) =>
+          f.type === "sample_ref" ? [f.sample_type] : [],
+        )}
+      />
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium">Aviso</legend>
@@ -290,17 +296,29 @@ export function TaskForm({ day, onDone }: { day: string; onDone: () => void }) {
 }
 
 /** Elegir muestras de cualquier tipo (búsqueda + casillas). */
-function SampleChooser({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+function SampleChooser({
+  value,
+  onChange,
+  types: allowed,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  /** Tipos que usa la plantilla elegida (p. ej. animal para Morris); vacío = todos. */
+  types: string[];
+}) {
   const samples = useSamples();
   const types = useSampleTypes();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [all, setAll] = useState(false);
+  const onlyTypes = allowed.length > 0 && !all;
   const list = (samples.data ?? [])
     .filter(
       (s) =>
         s.status === "activa" &&
         (!q.trim() || s.code.toLowerCase().includes(q.trim().toLowerCase())),
     )
+    .filter((s) => !onlyTypes || allowed.includes(s.sample_type))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, 40);
 
@@ -347,6 +365,22 @@ function SampleChooser({ value, onChange }: { value: string[]; onChange: (v: str
             aria-label="Buscar muestra"
             className="h-12 font-mono text-base"
           />
+          {allowed.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setAll(!all)}
+              className="min-h-10 self-start text-sm text-primary"
+            >
+              {all
+                ? `Solo ${[...new Set(allowed)].map((t) => types.labelOf(t).toLowerCase()).join(", ")}`
+                : "Ver todas las muestras"}
+            </button>
+          )}
+          {list.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No hay muestras de ese tipo; regístralas en Muestras.
+            </p>
+          )}
           <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
             {list.map((s) => {
               const on = value.includes(s.code);

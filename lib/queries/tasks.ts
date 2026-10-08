@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { localDay, occurrenceInstants, type Repeat } from "@/lib/calendar/dates";
 import { createClient } from "@/lib/supabase/client";
 import type { Json, Tables } from "@/lib/supabase/database.types";
+import { planEntries } from "@/lib/calendar/start-plan";
 import { parseFields } from "@/lib/templates/fields";
-import { initialValues, type EntryData } from "@/lib/templates/values";
 
 export type ScheduledTask = Tables<"scheduled_tasks">;
 export const taskKeys = {
@@ -129,10 +129,11 @@ export function useDeleteTask() {
 }
 
 /**
- * Empezar una tarea: crea la entrada con su plantilla, proyecto y título, y coloca sus muestras
- * en los campos de muestra del tipo correspondiente. La tarea queda hecha y ligada a la entrada.
+ * Empezar una tarea: crea la entrada con su plantilla, proyecto y título, con sus muestras en los
+ * campos del tipo correspondiente (una entrada por muestra si la plantilla es de una sola, p. ej.
+ * un ratón por prueba conductual). La tarea queda hecha y ligada a la primera entrada.
  */
-export async function startTask(task: ScheduledTask, timeZone: string): Promise<string> {
+export async function startTask(task: ScheduledTask, timeZone: string): Promise<string[]> {
   if (!task.template_id) throw new Error("Esta tarea no tiene plantilla.");
   const supabase = createClient();
   const { data: template, error: e1 } = await supabase
@@ -154,38 +155,31 @@ export async function startTask(task: ScheduledTask, timeZone: string): Promise<
   ]);
   if (e2) throw e2;
 
-  const fields = parseFields(version.fields);
-  const data: EntryData = initialValues(fields);
-  for (const s of samples ?? []) {
-    const f =
-      fields.find(
-        (x) => x.type === "sample_ref" && x.sample_type === s.sample_type && x.role === "usada",
-      ) ?? fields.find((x) => x.type === "sample_ref" && x.sample_type === s.sample_type);
-    if (!f || f.type !== "sample_ref") continue;
-    if (f.multiple) data[f.key] = [...((data[f.key] as string[]) ?? []), s.code];
-    else if (!data[f.key]) data[f.key] = s.code;
-  }
-
-  const { data: entry, error: e3 } = await supabase
+  // En el orden en que se eligieron (p. ej. el orden de los ratones en la prueba).
+  const ordered = task.sample_codes.flatMap((c) => (samples ?? []).filter((s) => s.code === c));
+  const plan = planEntries(parseFields(version.fields), ordered);
+  const startedAt = new Date().toISOString();
+  const { data: entries, error: e3 } = await supabase
     .from("entries")
-    .insert({
-      entry_date: localDay(task.starts_at, timeZone),
-      started_at: new Date().toISOString(),
-      template_id: task.template_id,
-      template_version: template.current_version,
-      title: task.title,
-      project_id: task.project_id,
-      objective: task.notes,
-      data: data as Json,
-    })
-    .select("id")
-    .single();
+    .insert(
+      plan.map((p) => ({
+        entry_date: localDay(task.starts_at, timeZone),
+        started_at: startedAt,
+        template_id: task.template_id!,
+        template_version: template.current_version,
+        title: p.sampleCode ? `${task.title} · ${p.sampleCode}` : task.title,
+        project_id: task.project_id,
+        objective: task.notes,
+        data: p.data as Json,
+      })),
+    )
+    .select("id");
   if (e3) throw e3;
   await supabase
     .from("scheduled_tasks")
-    .update({ status: "hecha", entry_id: entry.id, completed_at: new Date().toISOString() })
+    .update({ status: "hecha", entry_id: entries[0].id, completed_at: new Date().toISOString() })
     .eq("id", task.id);
-  return entry.id;
+  return entries.map((e) => e.id);
 }
 
 export function useStartTask() {
