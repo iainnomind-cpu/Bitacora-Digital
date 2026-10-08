@@ -693,7 +693,7 @@ export type Database = {
           notes?: string | null;
           template_id?: string | null;
           project_id?: string | null;
-          sample_codes?: string[];
+          sample_codes: string[];
           starts_at: string;
           duration_minutes?: number | null;
           remind_at?: string | null;
@@ -723,7 +723,29 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_tasks_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "templates";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "scheduled_tasks_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "scheduled_tasks_entry_id_fkey";
+            columns: ["entry_id"];
+            isOneToOne: false;
+            referencedRelation: "entries";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       solution_recipes: {
         Row: {
