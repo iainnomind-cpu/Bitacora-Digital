@@ -10,7 +10,10 @@ export default function NuevaEntradaPage() {
   return (
     <>
       <PageHeader title="Nueva entrada">
-        <p className="text-sm text-muted-foreground">¿Qué actividad vas a registrar?</p>
+        <p className="text-sm text-muted-foreground">
+          ¿Qué actividad vas a registrar? Cada plantilla es el formulario de un tipo de actividad:
+          elige una o deja que la IA te sugiera.
+        </p>
       </PageHeader>
       <GuideBanner task="entrada" />
       {/* useSearchParams es dato de tiempo de ejecución (cacheComponents). */}

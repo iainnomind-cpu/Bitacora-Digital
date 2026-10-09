@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Info, Plus, Trash2 } from "lucide-react";
 import { chipClass, fieldInputClass } from "@/components/entry/fields/inputs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
   type SampleInput,
   type SampleStatus,
 } from "@/lib/queries/samples";
+import { SAMPLE_TYPE_HELP } from "@/lib/help/glossary";
 import { useSampleTypes } from "@/lib/queries/sample-types";
 import { ParentPicker } from "./parent-picker";
 
@@ -139,6 +140,12 @@ export function SampleForm({
             </button>
           ))}
         </div>
+        {SAMPLE_TYPE_HELP[type] && (
+          <p className="flex gap-1.5 text-sm text-muted-foreground">
+            <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+            {SAMPLE_TYPE_HELP[type]}
+          </p>
+        )}
       </fieldset>
 
       {parentTypes.length > 0 && (

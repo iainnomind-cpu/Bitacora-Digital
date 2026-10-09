@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Beaker, ChevronRight, ClipboardCheck, FlaskConical, LayoutTemplate } from "lucide-react";
+import {
+  Beaker,
+  ChevronRight,
+  CircleHelp,
+  ClipboardCheck,
+  FlaskConical,
+  LayoutTemplate,
+} from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { GuideBanner } from "@/components/onboarding/guide";
 import { TourButton } from "@/components/onboarding/tour-button";
@@ -42,6 +49,14 @@ export default function AjustesPage() {
             Bitácora
           </h2>
           <div className="flex flex-col gap-2">
+            <Link
+              href="/ayuda"
+              className="flex min-h-12 items-center gap-3 rounded-xl border bg-card px-4 transition-colors hover:bg-muted/50"
+            >
+              <CircleHelp className="size-5 text-muted-foreground" aria-hidden />
+              <span className="flex-1 font-medium">Ayuda: qué significa cada cosa</span>
+              <ChevronRight className="size-5 text-muted-foreground" aria-hidden />
+            </Link>
             <TourButton />
             <Link
               href="/plantillas"
