@@ -667,10 +667,49 @@ export const TEMPLATE_PACKS: TemplatePack[] = [
   {
     key: "histologia",
     name: "Histología (adicionales)",
-    description: "Además de las plantillas iniciales: inmunofluorescencia, H-E, Nissl y cortes.",
+    description: "Disección de regiones, cortes, microdisección, inmunofluorescencia, H-E y Nissl.",
     icon: "microscope",
-    sampleTypes: [],
+    sampleTypes: [
+      {
+        key: "corte",
+        label: "Corte",
+        parent_keys: ["tejido", "bloque"],
+        metadata_keys: ["grosor µm", "plano", "posición / serie"],
+      },
+    ],
     templates: [
+      {
+        name: "Disección de región",
+        activity_type: "diseccion",
+        description: "Obtener una región de un tejido (p. ej. hipocampo del cerebro).",
+        icon: "brain",
+        color: "orange",
+        fields: [
+          sample("origen", "Tejido de origen", "tejido", { required: true }),
+          text("region", "Región disecada", { required: true }),
+          sel("hemisferio", "Hemisferio", ["Izquierdo", "Derecho", "Ambos"]),
+          text("solucion", "Solución / medio"),
+          bool("en_frio", "En frío / sobre hielo"),
+          sample("regiones", "Regiones obtenidas", "tejido", { multiple: true, role: "producida" }),
+          text("destino", "Destino (fijación, congelación, siguiente paso)"),
+        ],
+      },
+      {
+        name: "Microdisección",
+        activity_type: "microdiseccion",
+        description:
+          "Aislar una subregión de un corte (p. ej. subículo, quitando corteza y giro dentado).",
+        icon: "slice",
+        color: "violet",
+        fields: [
+          sample("cortes", "Cortes de origen", "corte", { multiple: true, required: true }),
+          text("region", "Región que se conserva", { required: true, help: "Ej. subículo" }),
+          text("retirado", "Lo que se retira", { help: "Ej. corteza y giro dentado" }),
+          text("instrumento", "Instrumento (bisturí, aguja, estereoscopio)"),
+          sample("piezas", "Piezas obtenidas", "tejido", { multiple: true, role: "producida" }),
+          sel("destino", "Destino", ["Inclusión en resina", "IHQ", "Extracción", "Otro"]),
+        ],
+      },
       {
         name: "Inmunofluorescencia",
         activity_type: "inmunofluorescencia",
@@ -744,7 +783,13 @@ export const TEMPLATE_PACKS: TemplatePack[] = [
             "Laminillas",
             "Crioprotector −20 °C",
           ]),
-          sample("laminillas", "Laminillas producidas", "laminilla", {
+          sample("cortes", "Cortes producidos", "corte", {
+            multiple: true,
+            role: "producida",
+            help: "Cortes sueltos o flotantes",
+          }),
+          num("numero_cortes", "Número de cortes"),
+          sample("laminillas", "Laminillas montadas", "laminilla", {
             multiple: true,
             role: "producida",
           }),

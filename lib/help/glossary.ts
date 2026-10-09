@@ -4,7 +4,10 @@
 /** Qué es cada tipo de muestra inicial o de los paquetes. Los tipos propios no tienen texto. */
 export const SAMPLE_TYPE_HELP: Record<string, string> = {
   animal: "El animal del que salen las demás muestras (p. ej. un ratón 3xTg-M-001).",
-  tejido: "Lo que se obtiene del animal al disecar: cerebro, hemisferio, hipocampo, hígado…",
+  tejido:
+    "Lo que se obtiene al disecar: cerebro, hipocampo… o una región microdisecada de un corte (p. ej. subículo).",
+  corte:
+    "Sección gruesa (p. ej. 50 µm en vibratomo o criostato), flotante o antes de montarse en laminilla.",
   bloque:
     "El tejido incluido en resina o parafina: un «cubito» duro para cortarlo en rebanadas finas.",
   navaja: "La cuchilla de vidrio o diamante con la que se corta el bloque en el ultramicrotomo.",

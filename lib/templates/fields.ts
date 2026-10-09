@@ -14,6 +14,7 @@ import { z } from "zod";
 export const SAMPLE_TYPES = [
   "animal",
   "tejido",
+  "corte",
   "bloque",
   "navaja",
   "rejilla",
@@ -26,6 +27,7 @@ export type SampleType = string;
 export const SAMPLE_TYPE_LABELS: Record<string, string> = {
   animal: "Animal",
   tejido: "Tejido",
+  corte: "Corte",
   bloque: "Bloque",
   navaja: "Navaja",
   rejilla: "Rejilla",

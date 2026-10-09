@@ -62,9 +62,10 @@ export default function AyudaPage() {
             Tipos de muestra
           </h2>
           <p className="text-sm text-muted-foreground">
-            Cadena típica en histología y microscopía: animal → tejido → bloque → laminillas
-            (microscopio de luz) o rejillas (microscopio electrónico). Puedes crear tus propios
-            tipos en Muestras → Tipos de muestra.
+            Ejemplo de cadena: animal → cerebro → hipocampo (tejidos) → cortes de 50 µm → subículo
+            microdisecado (tejido) → bloque en resina → laminillas de 1 µm (microscopio de luz) o
+            rejillas (microscopio electrónico). Puedes crear tus propios tipos en Muestras → Tipos
+            de muestra.
           </p>
           <dl className="flex flex-col divide-y rounded-xl border bg-card">
             {Object.entries(SAMPLE_TYPE_HELP).map(([key, meaning]) => (
