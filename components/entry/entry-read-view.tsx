@@ -7,7 +7,7 @@ import { EntrySamplesList } from "@/components/samples/entry-samples-panel";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDateTime, formatTime } from "@/lib/datetime";
+import { formatDateTime, formatEntryDate, formatTime } from "@/lib/datetime";
 import { COMMON_TEXT_FIELDS } from "@/lib/entries/common";
 import { useTimeZone } from "@/lib/queries/profile";
 import {
@@ -45,8 +45,12 @@ export function EntryReadView({ entry, template }: { entry: Entry; template: Tem
 
       <div>
         <h1 className="font-heading text-2xl font-semibold tracking-tight">{entry.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {formatTime(entry.started_at, timeZone)} – {formatTime(entry.ended_at, timeZone)}
+        <p className="mt-1 font-medium">
+          Realizada el {formatEntryDate(entry.entry_date)}, {formatTime(entry.started_at, timeZone)}{" "}
+          – {formatTime(entry.ended_at, timeZone)}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Registrada el {formatDateTime(entry.created_at, timeZone)}
           {entry.closed_at && ` · Cerrada el ${formatDateTime(entry.closed_at, timeZone)}`}
         </p>
       </div>

@@ -20,7 +20,7 @@ import {
   type EntryDraft,
 } from "@/lib/queries/entries";
 import { resolveSuggestion, useFillTemplate, usePendingFill } from "@/lib/queries/ai";
-import { dateInTimeZone } from "@/lib/datetime";
+import { dateInTimeZone, formatDateTime } from "@/lib/datetime";
 import { useTimeZone } from "@/lib/queries/profile";
 import { zonedToUtc } from "@/lib/push/schedule";
 import { useProjects } from "@/lib/queries/projects";
@@ -301,7 +301,8 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
           className={fieldInputClass}
         />
         <p className="text-sm text-muted-foreground">
-          Si registras algo que hiciste otro día, cambia aquí la fecha.
+          Cuándo la hiciste (si fue otro día, cámbiala aquí). Registrada el{" "}
+          {formatDateTime(entry.created_at, timeZone)}.
         </p>
       </div>
 
