@@ -20,7 +20,9 @@ import {
   type EntryDraft,
 } from "@/lib/queries/entries";
 import { resolveSuggestion, useFillTemplate, usePendingFill } from "@/lib/queries/ai";
+import { dateInTimeZone } from "@/lib/datetime";
 import { useTimeZone } from "@/lib/queries/profile";
+import { zonedToUtc } from "@/lib/push/schedule";
 import { useProjects } from "@/lib/queries/projects";
 import { syncEntrySamples } from "@/lib/queries/samples";
 import { useTemplateVersion, type TemplateWithFields } from "@/lib/queries/templates";
@@ -70,6 +72,7 @@ export function EntrySkeleton() {
 function toDraft(entry: Entry): EntryDraft {
   return {
     title: entry.title,
+    entry_date: entry.entry_date,
     objective: entry.objective,
     observations: entry.observations,
     results: entry.results,
@@ -90,6 +93,7 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
   const [guided, setGuided] = useState<string | null>(null);
   const guidedField = template.fields.find((f) => f.key === guided);
   const setStatus = useSetEntryStatus(entry.id);
+  const timeZone = useTimeZone();
 
   const autosave = useAutosave(
     useCallback(
@@ -110,6 +114,21 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
     const next = { ...draft, ...patch };
     setDraft(next);
     autosave.schedule(next);
+  };
+
+  /** Cambia el día y mueve inicio y fin a ese día, con la misma hora. */
+  const changeDate = (day: string) => {
+    const move = (iso: string | null) => {
+      if (!iso) return iso;
+      const time = new Intl.DateTimeFormat("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZone,
+      }).format(new Date(iso));
+      return zonedToUtc(day, time, timeZone).toISOString();
+    };
+    update({ entry_date: day, started_at: move(draft.started_at), ended_at: move(draft.ended_at) });
   };
 
   const closeErrors: Record<string, string> = {
@@ -144,7 +163,6 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
   };
 
   // Llenado con IA (§7.2): se propone, se revisa y solo se aplica lo que el usuario marca.
-  const timeZone = useTimeZone();
   const fill = useFillTemplate(entry.id);
   const [localSuggestion, setSuggestion] = useState<{ id: string; output: FillOutput } | null>(
     null,
@@ -264,6 +282,22 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
         )}
       </div>
 
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="entry-date" className="text-base">
+          Fecha de la actividad
+        </Label>
+        <Input
+          id="entry-date"
+          type="date"
+          value={draft.entry_date}
+          onChange={(e) => e.target.value && changeDate(e.target.value)}
+          className={fieldInputClass}
+        />
+        <p className="text-sm text-muted-foreground">
+          Si registras algo que hiciste otro día, cambia aquí la fecha.
+        </p>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <Label htmlFor="entry-start" className="text-base">
@@ -272,7 +306,12 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
           <DateTimeInput
             id="entry-start"
             value={draft.started_at}
-            onChange={(v) => update({ started_at: v })}
+            onChange={(v) =>
+              update({
+                started_at: v,
+                ...(v ? { entry_date: dateInTimeZone(new Date(v), timeZone) } : {}),
+              })
+            }
           />
         </div>
         <div className="flex flex-col gap-2">

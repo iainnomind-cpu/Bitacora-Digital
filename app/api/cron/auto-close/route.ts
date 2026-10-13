@@ -18,7 +18,7 @@ async function handle(request: NextRequest) {
   const db = createAdminClient();
   const now = new Date();
   const [{ data: drafts, error }, { data: profiles }] = await Promise.all([
-    db.from("entries").select("id, user_id, entry_date").eq("status", "borrador"),
+    db.from("entries").select("id, user_id, entry_date, created_at").eq("status", "borrador"),
     db.from("profiles").select("user_id, timezone, auto_close_hours"),
   ]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -26,9 +26,12 @@ async function handle(request: NextRequest) {
   const byUser = new Map((profiles ?? []).map((p) => [p.user_id, p]));
   const expired = (drafts ?? []).filter((d) => {
     const p = byUser.get(d.user_id);
+    const hours = p?.auto_close_hours ?? 48;
+    // Una entrada de un día pasado (registrada después) también tiene su plazo desde que se creó.
+    if (now.getTime() < new Date(d.created_at).getTime() + hours * 3600_000) return false;
     return isExpiredDraft(
       d.entry_date,
-      p?.auto_close_hours ?? 48,
+      hours,
       p?.timezone ?? DEFAULT_TIMEZONE,
       now,
     );

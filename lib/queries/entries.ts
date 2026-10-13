@@ -15,6 +15,7 @@ export type EntryAddendum = Tables<"entry_addenda">;
 export type EntryDraft = Pick<
   Entry,
   | "title"
+  | "entry_date"
   | "objective"
   | "observations"
   | "results"
@@ -193,6 +194,35 @@ export function useSetEntryStatus(id: string) {
             ? { status: "anulada", void_reason: input.voidReason }
             : { status: "cerrada" },
         )
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (entry) => {
+      queryClient.setQueryData(entryKeys.detail(id), entry);
+      queryClient.invalidateQueries({ queryKey: entryKeys.all });
+    },
+  });
+}
+
+/**
+ * Reabre una entrada cerrada para corregirla: primero deja una adenda con el motivo (queda en
+ * el registro) y luego la vuelve borrador. La versión cerrada queda en el historial.
+ */
+export function useReopenEntry(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reason: string) => {
+      const db = createClient();
+      const { error: addError } = await db
+        .from("entry_addenda")
+        .insert({ entry_id: id, content: `Reabierta para editar. Motivo: ${reason}` });
+      if (addError) throw addError;
+      const { data, error } = await db
+        .from("entries")
+        .update({ status: "borrador" })
         .eq("id", id)
         .select("*")
         .single();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Ban, MessageSquarePlus } from "lucide-react";
+import { Ban, MessageSquarePlus, PencilLine } from "lucide-react";
 import { EntryAttachments } from "@/components/attachments/entry-attachments";
 import { EntrySamplesList } from "@/components/samples/entry-samples-panel";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useTimeZone } from "@/lib/queries/profile";
 import {
   useAddAddendum,
   useEntryAddenda,
+  useReopenEntry,
   useSetEntryStatus,
   type Entry,
 } from "@/lib/queries/entries";
@@ -49,6 +50,8 @@ export function EntryReadView({ entry, template }: { entry: Entry; template: Tem
           {entry.closed_at && ` · Cerrada el ${formatDateTime(entry.closed_at, timeZone)}`}
         </p>
       </div>
+
+      {entry.status === "cerrada" && <ReopenEntry entryId={entry.id} />}
 
       <dl className="flex flex-col gap-4">
         <ReadItem label="Objetivo" value={entry.objective} />
@@ -92,6 +95,63 @@ export function EntryReadView({ entry, template }: { entry: Entry; template: Tem
         </div>
       )}
     </div>
+  );
+}
+
+/** Reabrir para corregir: pide el motivo, que queda como adenda. */
+function ReopenEntry({ entryId }: { entryId: string }) {
+  const reopen = useReopenEntry(entryId);
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+
+  if (!open) {
+    return (
+      <Button variant="outline" className="h-12" onClick={() => setOpen(true)}>
+        <PencilLine className="size-4" aria-hidden />
+        Editar esta entrada
+      </Button>
+    );
+  }
+  return (
+    <form
+      className="flex flex-col gap-2 rounded-xl border bg-card p-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (reason.trim()) reopen.mutate(reason.trim());
+      }}
+    >
+      <Label htmlFor="reopen-reason" className="text-base">
+        ¿Qué vas a corregir?
+      </Label>
+      <p className="text-sm text-muted-foreground">
+        La entrada vuelve a borrador para que la edites. El motivo queda como adenda y la versión
+        cerrada se guarda en el historial.
+      </p>
+      <Textarea
+        id="reopen-reason"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="p. ej. corregir la fecha de la perfusión"
+        className="min-h-20 text-base"
+      />
+      {reopen.error && (
+        <p role="alert" className="text-sm text-destructive">
+          {reopen.error.message}
+        </p>
+      )}
+      <div className="flex gap-2">
+        <Button type="button" variant="ghost" className="h-12" onClick={() => setOpen(false)}>
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          className="h-12 flex-1"
+          disabled={reopen.isPending || reason.trim() === ""}
+        >
+          {reopen.isPending ? "Reabriendo…" : "Reabrir y editar"}
+        </Button>
+      </div>
+    </form>
   );
 }
 
