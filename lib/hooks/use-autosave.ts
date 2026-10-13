@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/** Los errores de Supabase son objetos con `message`, no instancias de Error. */
+function toError(e: unknown): Error {
+  if (e instanceof Error) return e;
+  if (e && typeof e === "object" && "message" in e) return new Error(String(e.message));
+  return new Error(String(e));
+}
+
 export type AutosaveStatus = "idle" | "pending" | "saving" | "saved" | "error";
 
 /**
@@ -41,7 +48,7 @@ export function useAutosave<T>(save: (value: T) => Promise<void>, delay = 1500) 
         .catch((e: unknown) => {
           failed = true;
           latest.current ??= pending; // reintentar con lo último
-          setError(e instanceof Error ? e : new Error(String(e)));
+          setError(toError(e));
         })
         .finally(() => {
           inflight.current = null;

@@ -69,6 +69,10 @@ export function EntrySkeleton() {
   );
 }
 
+function endsBeforeStart(d: Pick<EntryDraft, "started_at" | "ended_at">) {
+  return Boolean(d.started_at && d.ended_at && d.ended_at < d.started_at);
+}
+
 function toDraft(entry: Entry): EntryDraft {
   return {
     title: entry.title,
@@ -101,6 +105,7 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
         const saved = await saveEntryDraft(entry.id, value);
         queryClient.setQueryData(entryKeys.detail(entry.id), saved);
         void queryClient.invalidateQueries({ queryKey: ["entries", "day"] });
+        void queryClient.invalidateQueries({ queryKey: ["entries", "range"] });
         // Vínculos entrada ↔ muestra según los campos de muestra (no bloquea el guardado).
         await syncEntrySamples(entry.id, template.fields, value.data).catch((e) =>
           console.warn("No se pudieron vincular las muestras", e),
@@ -113,8 +118,10 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
   const update = (patch: Partial<EntryDraft>) => {
     const next = { ...draft, ...patch };
     setDraft(next);
-    autosave.schedule(next);
+    // Fin antes del inicio: la base lo rechaza; se guarda cuando se corrija.
+    if (!endsBeforeStart(next)) autosave.schedule(next);
   };
+  const badRange = endsBeforeStart(draft);
 
   /** Cambia el día y mueve inicio y fin a ese día, con la misma hora. */
   const changeDate = (day: string) => {
@@ -322,9 +329,16 @@ function DraftEditor({ entry, template }: { entry: Entry; template: TemplateWith
             id="entry-end"
             value={draft.ended_at}
             onChange={(v) => update({ ended_at: v })}
+            invalid={badRange}
           />
         </div>
       </div>
+      {badRange && (
+        <p role="alert" className="-mt-2 text-sm text-destructive">
+          El fin quedó antes del inicio, así que no se guarda todavía. Si la actividad fue otro
+          día, cambia la «Fecha de la actividad» (mueve inicio y fin juntos) o corrige el fin.
+        </p>
+      )}
 
       <ProjectField value={draft.project_id} onChange={(v) => update({ project_id: v })} />
 
